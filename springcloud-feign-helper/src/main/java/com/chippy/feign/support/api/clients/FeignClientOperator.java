@@ -37,16 +37,12 @@ public class FeignClientOperator {
             return (Result<Object>)ReflectUtil
                 .invoke(CommonSpringContext.getBean(element.getFeignClientClass()), element.getMethod(), params);
         }
-
-        for (FeignClientProcessor feignClientProcessor : feignClientProcessorList) {
-            feignClientProcessor.processBefore(element, params);
-        }
-        final Object response =
-            ReflectUtil.invoke(CommonSpringContext.getBean(element.getFeignClientClass()), element.getMethod(), params);
-        for (FeignClientProcessor feignClientProcessor : feignClientProcessorList) {
-            feignClientProcessor.processAfter(element, response);
-        }
-        return (Result<Object>)response;
+        final Object[] wrapParams =
+            doInvokeProcessorBefore(element, params, feignClientProcessorList, feignClientProcessorList.size());
+        final Result<Object> response = ReflectUtil
+            .invoke(CommonSpringContext.getBean(element.getFeignClientClass()), element.getMethod(), wrapParams);
+        return (Result<Object>)doInvokeProcessAfter(element, response, feignClientProcessorList,
+            feignClientProcessorList.size());
     }
 
     static FeignClientDefinition.Element getElement(String business) {
@@ -111,6 +107,28 @@ public class FeignClientOperator {
             Convert.toList(dataClass, response.getData());
     }
 
+    private static Object[] doInvokeProcessorBefore(FeignClientDefinition.Element element, Object[] params,
+        List<FeignClientProcessor> feignClientProcessorList, int size) {
+        if (size > 0) {
+            int newSize = size - 1;
+            final FeignClientProcessor feignClientProcessor = feignClientProcessorList.get(newSize);
+            final Object[] wrapParam = feignClientProcessor.processBefore(element, params);
+            return doInvokeProcessorBefore(element, wrapParam, feignClientProcessorList, newSize);
+        }
+        return params;
+    }
+
+    private static Object doInvokeProcessAfter(FeignClientDefinition.Element element, Object response,
+        List<FeignClientProcessor> feignClientProcessorList, int size) {
+        if (size > 0) {
+            int newSize = size - 1;
+            final FeignClientProcessor feignClientProcessor = feignClientProcessorList.get(newSize);
+            final Object wrapResponse = feignClientProcessor.processAfter(element, response);
+            return doInvokeProcessAfter(element, wrapResponse, feignClientProcessorList, newSize);
+        }
+        return response;
+    }
+
     /**
      * 针对异常情况做出自定义处理, 可自定义实现{@link FeignClientProcessor}接口完成自定义的操作处理
      * 默认使用{@link com.chippy.feign.support.api.processor.LogFeignClientProcessor}进行处理
@@ -119,7 +137,7 @@ public class FeignClientOperator {
      */
     static void processException(FeignClientDefinition.Element element, Exception e) {
         final List<FeignClientProcessor> feignClientProcessorList =
-            FeignClientProcessorRegistry.get(element.getFullPath());
+            FeignClientProcessorRegistry.get(element.getFullPath() + element.getMethod());
         if (null != feignClientProcessorList && !feignClientProcessorList.isEmpty()) {
             for (FeignClientProcessor feignClientProcessor : feignClientProcessorList) {
                 feignClientProcessor.processException(element, e);

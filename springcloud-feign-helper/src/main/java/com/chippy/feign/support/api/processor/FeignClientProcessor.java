@@ -2,6 +2,8 @@ package com.chippy.feign.support.api.processor;
 
 import com.chippy.feign.support.definition.FeignClientDefinition;
 
+import java.util.List;
+
 /**
  * FeignClientHelper调用时的处理器
  *
@@ -11,18 +13,34 @@ import com.chippy.feign.support.definition.FeignClientDefinition;
 public interface FeignClientProcessor {
 
     /**
+     * 获取指定拦截路径规则
+     *
+     * @author chippy
+     */
+    List<String> getIncludePathPattern();
+
+    /**
+     * 获取指定排除的拦截路径规则
+     *
+     * @author chippy
+     */
+    default List<String> getExcludePathPattern() {
+        return null;
+    }
+
+    /**
      * 调用前的自定义操作
      *
      * @author chippy
      */
-    void processBefore(FeignClientDefinition.Element element, Object[] param);
+    Object[] processBefore(FeignClientDefinition.Element element, Object[] param);
 
     /**
      * 调用后的自定义操作
      *
      * @author chippy
      */
-    void processAfter(FeignClientDefinition.Element element, Object object);
+    Object processAfter(FeignClientDefinition.Element element, Object response);
 
     /**
      * 调用异常的自定义操作

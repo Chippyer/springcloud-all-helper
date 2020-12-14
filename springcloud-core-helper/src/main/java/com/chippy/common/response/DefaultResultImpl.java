@@ -35,7 +35,12 @@ public class DefaultResultImpl<T> implements Result<T>, Serializable {
 
     @Override
     public int getCode() {
-        return code;
+        return this.code;
+    }
+
+    @Override
+    public void setData(T data) {
+        this.data = data;
     }
 
     @Override

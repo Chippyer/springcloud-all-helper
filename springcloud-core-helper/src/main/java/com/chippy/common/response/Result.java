@@ -25,6 +25,14 @@ public interface Result<T> {
     int getCode();
 
     /**
+     * 设置通讯返回结果内容
+     *
+     * @param data 通讯返回结果
+     * @author chippy
+     */
+    void setData(T data);
+
+    /**
      * 通讯返回结果内容
      *
      * @return <T>

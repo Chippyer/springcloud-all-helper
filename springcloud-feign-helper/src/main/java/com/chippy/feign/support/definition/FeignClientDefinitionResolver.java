@@ -11,9 +11,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.PathMatcher;
+import org.springframework.web.bind.annotation.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -29,8 +30,17 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
 
     private static final String SPRING_APPLICATION_NAME = "spring.application.name";
     private StringBuilder scannerPackages = new StringBuilder();
+    private PathMatcher pathMatcher;
     private ApplicationContext applicationContext;
     private String server;
+
+    public FeignClientDefinitionResolver() {
+        this.pathMatcher = new AntPathMatcher();
+    }
+
+    public FeignClientDefinitionResolver(PathMatcher pathMatcher) {
+        this.pathMatcher = pathMatcher;
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -39,7 +49,6 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
     }
 
     public void init() {
-        this.initScannerPackages();
         Map<String, FeignClientDefinition.Element> elements = new HashMap<>();
         for (String scannerPackage : this.scannerPackages.toString().split(",")) {
             for (Class<?> clazz : ClassScanner.scanPackage(scannerPackage)) {
@@ -52,7 +61,7 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
         elements.putAll(this.classForName(this.getAppendClassName()));
         this.initFeignClientDefinition(elements);
         if (log.isDebugEnabled()) {
-            log.debug("feign element list -> [{}]", JSONUtil.toJsonStr(FeignClientDefinition.elements()));
+            log.debug("feign client element list -> [{}]", JSONUtil.toJsonStr(FeignClientDefinition.elements()));
         }
     }
 
@@ -130,13 +139,39 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
             PostMapping postMapping = method.getAnnotation(PostMapping.class);
             GetMapping getMapping = method.getAnnotation(GetMapping.class);
             RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-            if (null != postMapping || null != getMapping || null != requestMapping) {
+            PutMapping putMapping = method.getAnnotation(PutMapping.class);
+            PatchMapping patchMapping = method.getAnnotation(PatchMapping.class);
+            DeleteMapping deleteMapping = method.getAnnotation(DeleteMapping.class);
+            if (null != postMapping || null != getMapping || null != requestMapping || null != putMapping
+                || null != patchMapping || null != deleteMapping) {
+                String[] requestPaths =
+                    this.resolvePath(postMapping, getMapping, requestMapping, putMapping, patchMapping, deleteMapping);
                 FeignClientDefinition.Element element =
                     this.doInitializedFeignDefinition(clazz, feignClientDefinitionInfo, method);
-                this.doRegisterFeignClientProcessor(element);
+                this.registerFeignClientProcessor(requestPaths, element);
             }
         }
         return feignClientDefinitionInfo;
+    }
+
+    private String[] resolvePath(PostMapping postMapping, GetMapping getMapping, RequestMapping requestMapping,
+        PutMapping putMapping, PatchMapping patchMapping, DeleteMapping deleteMapping) {
+        if (null != postMapping) {
+            return postMapping.value();
+        }
+        if (null != getMapping) {
+            return getMapping.value();
+        }
+        if (null != requestMapping) {
+            return requestMapping.value();
+        }
+        if (null != putMapping) {
+            return putMapping.value();
+        }
+        if (null != patchMapping) {
+            return patchMapping.value();
+        }
+        return deleteMapping.value();
     }
 
     private FeignClientDefinition.Element doInitializedFeignDefinition(Class<?> clazz,
@@ -147,10 +182,43 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
         return element;
     }
 
-    private void doRegisterFeignClientProcessor(FeignClientDefinition.Element element) {
+    private void registerFeignClientProcessor(String[] requestPaths, FeignClientDefinition.Element element) {
         final ServiceLoader<FeignClientProcessor> feignClientProcessors =
             ServiceLoader.load(FeignClientProcessor.class);
         for (FeignClientProcessor feignClientProcessor : feignClientProcessors) {
+            this.doRegisterFeignClientProcessor(requestPaths, element, feignClientProcessor);
+        }
+    }
+
+    private void doRegisterFeignClientProcessor(String[] requestPaths, FeignClientDefinition.Element element,
+        FeignClientProcessor feignClientProcessor) {
+        final List<String> includePathPatterns = feignClientProcessor.getIncludePathPattern();
+        final List<String> excludePathPatterns = feignClientProcessor.getExcludePathPattern();
+        if (CollectionUtils.isEmpty(includePathPatterns)) {
+            return;
+        }
+
+        boolean isMatch = false;
+        for (String includePattern : includePathPatterns) {
+            for (String requestPath : requestPaths) {
+                if (pathMatcher.match(includePattern, requestPath)) {
+                    isMatch = true;
+                    break;
+                }
+            }
+        }
+        if (!CollectionUtils.isEmpty(excludePathPatterns)) {
+            for (String excludePattern : excludePathPatterns) {
+                for (String requestPath : requestPaths) {
+                    if (pathMatcher.match(excludePattern, requestPath)) {
+                        isMatch = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (isMatch) {
             FeignClientProcessorRegistry.register(element.getFullPath() + element.getMethod(),
                 ReflectUtil.newInstance(feignClientProcessor.getClass()));
         }
@@ -174,6 +242,7 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        this.initScannerPackages();
         this.init();
     }
 }
