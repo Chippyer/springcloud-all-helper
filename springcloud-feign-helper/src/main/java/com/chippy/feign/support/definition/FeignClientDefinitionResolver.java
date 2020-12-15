@@ -1,7 +1,6 @@
 package com.chippy.feign.support.definition;
 
 import cn.hutool.core.lang.ClassScanner;
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.json.JSONUtil;
 import com.chippy.feign.support.api.processor.FeignClientProcessor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * FeignClientHelper元素信息解析器
@@ -183,11 +185,10 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
     }
 
     private void registerFeignClientProcessor(String[] requestPaths, FeignClientDefinition.Element element) {
-        final ServiceLoader<FeignClientProcessor> feignClientProcessors =
-            ServiceLoader.load(FeignClientProcessor.class);
-        for (FeignClientProcessor feignClientProcessor : feignClientProcessors) {
-            this.doRegisterFeignClientProcessor(requestPaths, element, feignClientProcessor);
-        }
+        final Map<String, FeignClientProcessor> feignClientProcessors =
+            applicationContext.getBeansOfType(FeignClientProcessor.class);
+        feignClientProcessors.forEach((k, feignClientProcessor) -> this
+            .doRegisterFeignClientProcessor(requestPaths, element, feignClientProcessor));
     }
 
     private void doRegisterFeignClientProcessor(String[] requestPaths, FeignClientDefinition.Element element,
@@ -219,8 +220,7 @@ public class FeignClientDefinitionResolver implements ApplicationContextAware, I
         }
 
         if (isMatch) {
-            FeignClientProcessorRegistry.register(element.getFullPath() + element.getMethod(),
-                ReflectUtil.newInstance(feignClientProcessor.getClass()));
+            FeignClientProcessorRegistry.register(element.getFullPath() + element.getMethod(), feignClientProcessor);
         }
     }
 

@@ -3,6 +3,7 @@ package com.chippy.feign.support.api.processor;
 import cn.hutool.json.JSONUtil;
 import com.chippy.feign.support.definition.FeignClientDefinition;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
  * @datetime 2020/12/13 15:43
  */
 @Slf4j
+@Component
 public class LogFeignClientProcessor implements FeignClientProcessor {
 
     /*** 核心处理前的日志信息预先缓存 */

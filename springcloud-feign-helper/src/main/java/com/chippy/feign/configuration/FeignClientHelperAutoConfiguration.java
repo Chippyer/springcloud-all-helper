@@ -9,6 +9,7 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 
@@ -20,8 +21,9 @@ import java.util.Map;
  *
  * @author chippy
  */
-@AutoConfigureBefore(FeignAutoConfiguration.class)
 @Configuration
+@AutoConfigureBefore(FeignAutoConfiguration.class)
+@ComponentScan({"com.chippy.feign"})
 public class FeignClientHelperAutoConfiguration implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
