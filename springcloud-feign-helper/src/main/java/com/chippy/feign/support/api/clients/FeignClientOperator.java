@@ -131,7 +131,6 @@ public class FeignClientOperator {
 
     /**
      * 针对异常情况做出自定义处理, 可自定义实现{@link FeignClientProcessor}接口完成自定义的操作处理
-     * 默认使用{@link com.chippy.feign.support.api.processor.LogFeignClientProcessor}进行处理
      *
      * @author chippy
      */

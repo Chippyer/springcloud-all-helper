@@ -37,6 +37,7 @@ public interface FeignClientProcessor {
 
     /**
      * 调用后的自定义操作
+     * 注意：这里如果想要包装data中的数据，一定要进行判空
      *
      * @author chippy
      */

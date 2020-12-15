@@ -3,11 +3,9 @@ package com.chippy.feign.support.definition;
 import com.chippy.common.utils.ObjectsUtil;
 import com.chippy.feign.support.api.processor.FeignClientProcessor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * FeignClientHelper处理工具{@link FeignClientProcessor}注册器
@@ -41,7 +39,7 @@ public class FeignClientProcessorRegistry {
         }
         final List<FeignClientProcessor> feignClientProcessors = feignClientProcessorMap.get(fullPath);
         if (ObjectsUtil.isEmpty(feignClientProcessors)) {
-            final LinkedList<FeignClientProcessor> newFeignClientProcessor = new LinkedList<>();
+            final List<FeignClientProcessor> newFeignClientProcessor = new LinkedList<>();
             newFeignClientProcessor.add(feignClientProcessor);
             feignClientProcessorMap.put(fullPath, newFeignClientProcessor);
             return;
@@ -49,6 +47,23 @@ public class FeignClientProcessorRegistry {
 
         feignClientProcessors.add(feignClientProcessor);
         feignClientProcessorMap.put(fullPath, feignClientProcessors);
+        feignClientProcessorMap.forEach((k, fcps) -> fcps.sort(new FeignClientProcessorComparator()));
+    }
+
+    static class FeignClientProcessorComparator implements Comparator<FeignClientProcessor> {
+        @Override
+        public int compare(FeignClientProcessor fcp1, FeignClientProcessor fcp2) {
+            final Order o1 = fcp1.getClass().getAnnotation(Order.class);
+            final Order o2 = fcp2.getClass().getAnnotation(Order.class);
+            int o1Value = Integer.MAX_VALUE, o2Value = Integer.MAX_VALUE;
+            if (null != o1) {
+                o1Value = o1.value();
+            }
+            if (null != o2) {
+                o2Value = o2.value();
+            }
+            return o1Value - o2Value;
+        }
     }
 
 }

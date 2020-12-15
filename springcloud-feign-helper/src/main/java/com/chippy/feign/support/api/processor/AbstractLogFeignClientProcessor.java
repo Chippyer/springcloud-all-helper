@@ -3,10 +3,6 @@ package com.chippy.feign.support.api.processor;
 import cn.hutool.json.JSONUtil;
 import com.chippy.feign.support.definition.FeignClientDefinition;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 日志功能FeignClientHelper调用时的处理器
@@ -15,8 +11,7 @@ import java.util.List;
  * @datetime 2020/12/13 15:43
  */
 @Slf4j
-@Component
-public class LogFeignClientProcessor implements FeignClientProcessor {
+public abstract class AbstractLogFeignClientProcessor implements FeignClientProcessor {
 
     /*** 核心处理前的日志信息预先缓存 */
     private static final String processBeforeLogStr = "调用服务[%s]的方法[%s]参数[%s]";
@@ -24,13 +19,6 @@ public class LogFeignClientProcessor implements FeignClientProcessor {
     private static final String processAfterLogStr = "调用服务[%s]的方法[%s]结果[%s]";
     /*** 核心处理异常的日志信息预先缓存 */
     private static final String processExceptionLogStr = "调用服务[%s]的方法[%s]异常[%s]";
-
-    @Override
-    public List<String> getIncludePathPattern() {
-        return new ArrayList<String>() {{
-            add("/**");
-        }};
-    }
 
     @Override
     public Object[] processBefore(FeignClientDefinition.Element element, Object[] param) {
