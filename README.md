@@ -2,7 +2,7 @@
 基于SpringCloud的相关组件封装, 如Feign, Redisson, RabbitMQ, ElasticJob...
 希望大家多多关注和使用, 一起讨论学习。
 
-目前已实现Feign相关基础功能
+目前已实现Feign相关基础功能，详细示例查看[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
 如正常调用我们要写如下代码
 ```java
 @Resource
@@ -34,6 +34,7 @@ public MyResultImpl<List<String>> test02(String param) {
     return MyResultImpl.success(data);
 }
 ```
+更加便捷的进行调用以及对某些业务做通用功能封装的支持(详见FeignClientProcessor接口)，目前是为了让大家在项目中使用更加统一，规范，且便捷。
 
 
 
