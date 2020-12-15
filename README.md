@@ -3,7 +3,9 @@
 希望大家多多关注和使用, 一起讨论学习。
 
 目前已实现Feign相关基础功能，详细示例查看[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
-如正常调用我们要写如下代码
+___
+<h2>简单的对比</h2>
+<p>正常调用我们要写如下代码</p>
 ```java
 @Resource
 private MarketingFeignClient marketingFeignClient;
