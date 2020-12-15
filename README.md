@@ -40,5 +40,7 @@ public MyResultImpl<List<String>> test02(String param) {
 更加便捷的进行调用以及对某些业务做通用功能封装的支持(详见FeignClientProcessor接口)，目前是为了让大家在项目中使用更加统一，规范，且便捷。
 
 
+*** 
+本项目立志于像Hutool的核心理念发展发展，让Java语言也可以“甜甜的”。
 
 逐步更新中...
