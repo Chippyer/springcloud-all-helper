@@ -6,6 +6,7 @@
 ___
 <h2>简单的对比</h2>
 <p>正常调用我们要写如下代码</p>
+
 ```java
 @Resource
 private MarketingFeignClient marketingFeignClient;
