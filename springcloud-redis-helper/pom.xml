@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>springcloud-redisson-helper</artifactId>
+    <artifactId>springcloud-redis-helper</artifactId>
 
     <properties>
         <redisson.version>3.9.0</redisson.version>
