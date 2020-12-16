@@ -7,7 +7,7 @@
     <modules>
         <module>springcloud-core-helper</module>
         <module>springcloud-feign-helper</module>
-        <module>springcloud-redisson-helper</module>
+        <module>springcloud-redis-helper</module>
     </modules>
 
     <properties>
