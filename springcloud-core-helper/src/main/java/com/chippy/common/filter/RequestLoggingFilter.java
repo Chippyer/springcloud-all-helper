@@ -69,7 +69,7 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug(getThreadId().concat(message).concat(calcRequestTime(request)));
+            log.debug(getThreadId().concat(message).concat(calcRequestTimeIfNecessary(request)));
         }
     }
 
@@ -98,11 +98,11 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug(getThreadId().concat(message).concat(calcRequestTime(request)));
+            log.debug(getThreadId().concat(message).concat(calcRequestTimeIfNecessary(request)));
         }
     }
 
-    private String calcRequestTime(HttpServletRequest request) {
+    private String calcRequestTimeIfNecessary(HttpServletRequest request) {
         long mills = 0;
         String requestTimeUniqueName = getRequestTimeUniqueName();
         Object processStartTime = request.getAttribute(requestTimeUniqueName);

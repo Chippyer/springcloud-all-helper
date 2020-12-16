@@ -10,11 +10,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>springcloud-core-helper</artifactId>
+    
+    <properties>
+        <jasypt.version>2.1.0</jasypt.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>${jasypt.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
