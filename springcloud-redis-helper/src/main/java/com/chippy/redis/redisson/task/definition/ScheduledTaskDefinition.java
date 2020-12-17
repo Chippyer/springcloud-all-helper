@@ -1,4 +1,4 @@
-package com.chippy.redis.redisson.task.domain;
+package com.chippy.redis.redisson.task.definition;
 
 import lombok.Data;
 import org.redisson.api.annotation.REntity;
@@ -15,17 +15,20 @@ import java.util.List;
  */
 @REntity
 @Data
-public class ScheduledTaskMetaInfo implements Serializable {
+public class ScheduledTaskDefinition implements Serializable {
 
     @RId
     private String id;
     private List<String> lastProcessServerIps;
-    private boolean status; // 1. 执行中 2. 可执行 3. 执行结束
+    private boolean status;
 
-    public ScheduledTaskMetaInfo(String id, List<String> lastProcessServerIps, boolean status) {
+    public ScheduledTaskDefinition(String id, List<String> lastProcessServerIps, boolean status) {
         this.id = id;
         this.lastProcessServerIps = lastProcessServerIps;
         this.status = status;
+    }
+
+    public ScheduledTaskDefinition() {
     }
 
 }

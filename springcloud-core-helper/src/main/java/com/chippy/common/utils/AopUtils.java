@@ -3,7 +3,6 @@ package com.chippy.common.utils;
 import cn.hutool.core.util.ReflectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AdvisedSupport;
-import org.springframework.aop.support.AopUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -14,15 +13,15 @@ import java.lang.reflect.Proxy;
  * @author chippy
  */
 @Slf4j
-public class AopTargetUtil {
+public class AopUtils extends org.springframework.aop.support.AopUtils {
 
     public static Object getTarget(Object proxy) {
-        if (!AopUtils.isAopProxy(proxy)) {
+        if (!isAopProxy(proxy)) {
             return proxy;//不是代理对象
         }
 
         try {
-            if (AopUtils.isJdkDynamicProxy(proxy)) {
+            if (isJdkDynamicProxy(proxy)) {
                 return getJdkDynamicProxyTargetObject(proxy);
             } else {
                 return getCglibProxyTargetObject(proxy);

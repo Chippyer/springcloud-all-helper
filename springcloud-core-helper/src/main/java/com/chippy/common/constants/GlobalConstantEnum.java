@@ -7,7 +7,7 @@ package com.chippy.common.constants;
  */
 public enum GlobalConstantEnum {
 
-    REDIS_CONNECTION_PREFIX("redis://", "Redis地址配置前缀");
+    SPRING_SCHEDULED_ASSIGN_SERVER("spring.scheduled.assign-server", "SpringScheduled指定的执行服务");
 
     private final String constantValue;
     private final String constantDesc;
