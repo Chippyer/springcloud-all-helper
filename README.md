@@ -68,11 +68,12 @@ public class FeignClientController {
     }
 
 }
-
 ```
+
 <h5>请求处理器</h5>
 在Feign的执行请求前后实现自定义规则，如上述的[AbstractLogFeignClientProcessor]
 日子功能的实现就是以来此接口完成的
+
 ```java
 package com.chippy.example.feign.processor;
 
@@ -143,7 +144,7 @@ public class CustomerProcessor implements FeignClientProcessor {
 
 <h2>springcloud-redis-helper</h2>
 底层依赖redisson框架，故此配置时参考redisson的相关配置文件进行配置。
-具体使用详见[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
+具体使用详见具体详细描述详见[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
 <ol>
 <h5>解决集群服务定时任务重复执行问题</h5>
 通常我们在一个服务集群部署时，定时任务会在多个实例上同时执行，但是我们
@@ -172,12 +173,15 @@ public class TestTask implements DistributedScheduled {
 
 }
 ```
+
 没错就是这么简单。如果想要指定某台机器执行，在你yml配置文件中加入如下配置即可。
+
 ```yaml
 spring:
   scheduled:
     assign-server: 你的服务器ip地址
 ```
+
 那么你会问，集群服务运行在同一台机器上怎么办?
 很好，我们不能规避这个问题，所以底层做了处理，这类情况依然会保证多实例只会执行一次
 但是无法保证是哪个实例完成了任务，因为存在着竞争。
