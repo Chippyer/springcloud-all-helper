@@ -37,7 +37,7 @@ public class FeignClientDefinition {
      * @author chippy
      */
     public static FeignClientDefinition getInstance() {
-        return CacheInstance.INSTANCE.getElement();
+        return CacheInstance.INSTANCE.getFeignClientDefinition();
     }
 
     /**
@@ -111,20 +111,19 @@ public class FeignClientDefinition {
         public Class<?> getFeignClientClass() {
             return feignClientClass;
         }
-
     }
 
     private enum CacheInstance {
         INSTANCE(new FeignClientDefinition());
 
-        private FeignClientDefinition element;
+        private FeignClientDefinition feignClientDefinition;
 
-        CacheInstance(FeignClientDefinition element) {
-            this.element = element;
+        CacheInstance(FeignClientDefinition feignClientDefinition) {
+            this.feignClientDefinition = feignClientDefinition;
         }
 
-        private FeignClientDefinition getElement() {
-            return element;
+        private FeignClientDefinition getFeignClientDefinition() {
+            return feignClientDefinition;
         }
     }
 
