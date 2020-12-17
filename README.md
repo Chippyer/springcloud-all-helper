@@ -6,7 +6,7 @@ ___
 <h2>springcloud-feign-helper</h2>
 对于Feign调用任务的高度封装，让我们的请求变的更加简单。并且在扩展性上提供了支持。
 具体详细描述详见[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
-<ol>
+
 <h5>调度使用</h5>
 实现了更加简洁便利的实现请求的调度，让你只关心业务即可。此时你会问，那日志输入的代
 码体现在哪呢？你完全不必担心我们可以找到[AbstractLogFeignClientProcessor]指
@@ -138,14 +138,13 @@ public class CustomerProcessor implements FeignClientProcessor {
     }
 
 }
-
 ```
-</ol>
+
 
 <h2>springcloud-redis-helper</h2>
 底层依赖redisson框架，故此配置时参考redisson的相关配置文件进行配置。
 具体使用详见具体详细描述详见[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
-<ol>
+
 <h5>解决集群服务定时任务重复执行问题</h5>
 通常我们在一个服务集群部署时，定时任务会在多个实例上同时执行，但是我们
 想要预期是某一台或者说是指定某一台进行执行时。你只需实现一个接口即可。
@@ -185,7 +184,6 @@ spring:
 那么你会问，集群服务运行在同一台机器上怎么办?
 很好，我们不能规避这个问题，所以底层做了处理，这类情况依然会保证多实例只会执行一次
 但是无法保证是哪个实例完成了任务，因为存在着竞争。
-</ol>
 	
 ___
 本项目立志于像Hutool的核心理念发展发展，让Java语言也可以“甜甜的”。
