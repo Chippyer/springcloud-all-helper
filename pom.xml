@@ -8,6 +8,7 @@
         <module>springcloud-core-helper</module>
         <module>springcloud-feign-helper</module>
         <module>springcloud-redis-helper</module>
+        <module>springcloud-elasticjob-helper</module>
     </modules>
 
     <properties>

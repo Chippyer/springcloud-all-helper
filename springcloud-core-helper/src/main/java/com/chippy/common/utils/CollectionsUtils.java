@@ -1,5 +1,7 @@
 package com.chippy.common.utils;
 
+import cn.hutool.core.collection.CollectionUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.List;
  *
  * @author: chippy
  */
-public class CollectionsUtil {
+public class CollectionsUtils extends CollectionUtil {
 
     /**
      * 将传入数据按指定数量{len}切分为多个子集集合

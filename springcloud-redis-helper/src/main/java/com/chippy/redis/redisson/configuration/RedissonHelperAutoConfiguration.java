@@ -1,6 +1,7 @@
 package com.chippy.redis.redisson.configuration;
 
 import com.chippy.redis.redisson.task.support.ScheduledTaskDefinitionResolver;
+import com.ulisesbocchio.jasyptspringboot.annotation.ConditionalOnMissingBean;
 import org.redisson.api.RLiveObjectService;
 import org.redisson.api.RedissonClient;
 import org.redisson.spring.starter.RedissonAutoConfiguration;
@@ -21,11 +22,13 @@ import org.springframework.context.annotation.Configuration;
 public class RedissonHelperAutoConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean
     public RLiveObjectService liveObjectService(RedissonClient redissonClient) {
         return redissonClient.getLiveObjectService();
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public ScheduledTaskDefinitionResolver scheduledTaskDefinitionResolver() {
         return new ScheduledTaskDefinitionResolver();
     }
