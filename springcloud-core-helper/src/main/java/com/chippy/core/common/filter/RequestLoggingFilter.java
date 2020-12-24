@@ -1,7 +1,7 @@
-package com.chippy.common.filter;
+package com.chippy.core.common.filter;
 
 import cn.hutool.json.JSONUtil;
-import com.chippy.common.utils.ObjectsUtil;
+import com.chippy.core.common.utils.ObjectsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
@@ -55,7 +55,7 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
     }
 
     public RequestLoggingFilter(boolean includeRequestBody, boolean includeQueryString, boolean includePayload,
-                                boolean includeClient, boolean includeHeader) {
+        boolean includeClient, boolean includeHeader) {
         super.setIncludeQueryString(includeQueryString);
         super.setIncludePayload(includePayload);
         super.setIncludeClientInfo(includeClient);
@@ -65,7 +65,7 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
 
     @Override
     protected void beforeRequest(HttpServletRequest request, String message) {
-        if (filterIgnoreUrl(request)) {
+        if (this.filterIgnoreUrl(request)) {
             return;
         }
         if (log.isDebugEnabled()) {
@@ -109,7 +109,7 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
         if (processStartTime == null) { //首次 放置值
             request.setAttribute(requestTimeUniqueName, Instant.now());
         } else { //请求结束的处理
-            Instant start = (Instant) processStartTime;
+            Instant start = (Instant)processStartTime;
             Instant now = Instant.now();
             mills = Duration.between(start, now).toMillis();
             request.removeAttribute(requestTimeUniqueName);
@@ -127,7 +127,7 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type targetType,
-                            Class<? extends HttpMessageConverter<?>> converterType) {
+        Class<? extends HttpMessageConverter<?>> converterType) {
         if (isIncludeRequestBody()) {
             return methodParameter.getParameterAnnotation(RequestBody.class) != null;
         }
@@ -136,25 +136,25 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
 
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
-                                           Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
+        Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
         return inputMessage;
     }
 
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
-                                Class<? extends HttpMessageConverter<?>> converterType) {
+        Class<? extends HttpMessageConverter<?>> converterType) {
         Method method = parameter.getMethod();
         String requestBody = JSONUtil.toJsonStr(body);
         if (log.isDebugEnabled()) {
-            log.debug("请求类: [" + parameter.getContainingClass().getSimpleName() + "], 请求方法名: [" + method.getName() + "]"
-                    + "请求参数: [" + requestBody + "]");
+            log.debug("请求类: [" + parameter.getContainingClass().getSimpleName() + "], 请求方法名: [" + method.getName()
+                + "], 请求参数: [" + requestBody + "]");
         }
         return body;
     }
 
     @Override
     public Object handleEmptyBody(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
-                                  Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+        Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         return body;
     }
 

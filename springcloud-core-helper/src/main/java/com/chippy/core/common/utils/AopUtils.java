@@ -1,4 +1,4 @@
-package com.chippy.common.utils;
+package com.chippy.core.common.utils;
 
 import cn.hutool.core.util.ReflectUtil;
 import lombok.extern.slf4j.Slf4j;

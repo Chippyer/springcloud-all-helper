@@ -1,6 +1,6 @@
 package com.chippy.core.configuration;
 
-import com.chippy.common.utils.CommonSpringContext;
+import com.chippy.core.common.utils.CommonSpringContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

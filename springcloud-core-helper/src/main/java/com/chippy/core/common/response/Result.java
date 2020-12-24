@@ -1,4 +1,4 @@
-package com.chippy.common.response;
+package com.chippy.core.common.response;
 
 /**
  * 服务间通讯返回结果结构接口

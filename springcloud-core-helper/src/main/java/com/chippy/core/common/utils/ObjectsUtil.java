@@ -1,4 +1,4 @@
-package com.chippy.common.utils;
+package com.chippy.core.common.utils;
 
 import java.util.Collection;
 import java.util.Map;

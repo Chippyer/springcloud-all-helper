@@ -1,4 +1,4 @@
-package com.chippy.common.utils;
+package com.chippy.core.common.utils;
 
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;

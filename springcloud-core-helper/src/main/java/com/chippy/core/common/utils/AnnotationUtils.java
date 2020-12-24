@@ -1,4 +1,4 @@
-package com.chippy.common.utils;
+package com.chippy.core.common.utils;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationConfigurationException;

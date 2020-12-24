@@ -1,4 +1,4 @@
-package com.chippy.common.response;
+package com.chippy.core.common.response;
 
 import lombok.Data;
 
