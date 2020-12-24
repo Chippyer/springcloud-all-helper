@@ -1,8 +1,8 @@
 package com.chippy.redis.redisson.task.support;
 
 import cn.hutool.core.util.ReflectUtil;
-import com.chippy.common.constants.GlobalConstantEnum;
-import com.chippy.common.utils.AopUtils;
+import com.chippy.core.common.constants.GlobalConstantEnum;
+import com.chippy.core.common.utils.AopUtils;
 import com.chippy.redis.redisson.task.definition.ScheduledTaskDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLiveObjectService;

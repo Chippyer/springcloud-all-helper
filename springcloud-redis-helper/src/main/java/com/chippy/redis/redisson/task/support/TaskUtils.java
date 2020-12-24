@@ -1,6 +1,6 @@
 package com.chippy.redis.redisson.task.support;
 
-import com.chippy.common.utils.IpUtil;
+import com.chippy.core.common.utils.IpUtil;
 
 import java.util.List;
 

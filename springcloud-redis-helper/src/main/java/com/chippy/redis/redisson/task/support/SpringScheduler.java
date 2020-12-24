@@ -1,7 +1,7 @@
 package com.chippy.redis.redisson.task.support;
 
 import cn.hutool.json.JSONUtil;
-import com.chippy.common.utils.IpUtil;
+import com.chippy.core.common.utils.IpUtil;
 import com.chippy.redis.redisson.task.definition.ScheduledTaskDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
