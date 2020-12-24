@@ -100,9 +100,9 @@ public class FailToRetryRunner implements CommandLineRunner, ApplicationContextA
             // 对于预定执行并执行时间已过期的任务进行延时处理 -> 当前时间+1min
             final DateTime newInvokeDateTime = currentDateTime.offsetNew(DateField.MINUTE, 1);
             jobInfo.setInvokeDateTime(newInvokeDateTime);
-            elasticJobProcessor.createJob(jobInfo);
+            elasticJobProcessor.updateJob(jobInfo);
         } else {
-            elasticJobProcessor.createJob(jobInfo);
+            elasticJobProcessor.updateJob(jobInfo);
         }
     }
 
