@@ -18,9 +18,6 @@ import java.lang.annotation.*;
 @Inherited
 public @interface EnableElasticJob {
 
-    /**
-     * 任务跟踪使用的DB类型，默认Redis
-     */
-    DBTypeEnum traceDbType() default DBTypeEnum.REDIS;
+    boolean traceMonitor() default true;
 
 }

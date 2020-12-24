@@ -1,5 +1,6 @@
-package com.chippy.elasticjob.support.api.common;
+package com.chippy.elasticjob.support.api;
 
+import com.chippy.elasticjob.support.domain.JobInfo;
 import org.apache.shardingsphere.elasticjob.infra.pojo.JobConfigurationPOJO;
 import org.apache.shardingsphere.elasticjob.lite.lifecycle.domain.JobBriefInfo;
 
@@ -11,13 +12,13 @@ import java.util.List;
  *
  * @author: chippy @datetime: 2020-11-11 18:08
  */
-public interface ElasticJobProcessor {
+public interface TraceJobHandler {
 
     /**
      * 创建一个定时任务
      * <p>
      * 如果需要的话
-     * 记录任务状态为{@link com.chippy.elasticjob.support.domain.enums.JobStatusEnum}READY状态
+     * 记录任务状态为{@link com.chippy.elasticjob.support.enums.JobStatusEnum}READY状态
      * 如果任务已存在则不进行创建，判断规则为 -> 任务{originalJobName}对应的任务状态为READY
      *
      * @author chippy

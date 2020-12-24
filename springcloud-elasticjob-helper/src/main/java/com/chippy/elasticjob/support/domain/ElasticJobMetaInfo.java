@@ -16,20 +16,20 @@ public class ElasticJobMetaInfo {
      */
     private String failToRetryServerIp;
 
-    public static volatile ElasticJobMetaInfo elasticJobAnnotationMetaInfo;
+    public static volatile ElasticJobMetaInfo elasticJobMetaInfo;
 
     private ElasticJobMetaInfo() {
     }
 
     public static ElasticJobMetaInfo getInstance() {
-        if (elasticJobAnnotationMetaInfo != null) {
-            return elasticJobAnnotationMetaInfo;
+        if (elasticJobMetaInfo != null) {
+            return elasticJobMetaInfo;
         }
         synchronized (ElasticJobMetaInfo.class) {
-            if (elasticJobAnnotationMetaInfo == null) {
-                elasticJobAnnotationMetaInfo = new ElasticJobMetaInfo();
+            if (elasticJobMetaInfo == null) {
+                elasticJobMetaInfo = new ElasticJobMetaInfo();
             }
-            return elasticJobAnnotationMetaInfo;
+            return elasticJobMetaInfo;
         }
     }
 

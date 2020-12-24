@@ -77,8 +77,8 @@ public class FeignClientController {
 ```java
 package com.chippy.example.feign.processor;
 
-import com.chippy.common.response.Result;
-import com.chippy.common.utils.ObjectsUtil;
+import com.chippy.core.common.response.Result;
+import com.chippy.core.common.utils.ObjectsUtil;
 import com.chippy.example.feign.OrderInfoResult;
 import com.chippy.example.feign.service.ServiceA;
 import com.chippy.feign.support.api.processor.FeignClientProcessor;

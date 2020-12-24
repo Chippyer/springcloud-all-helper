@@ -11,4 +11,5 @@ public class ZooKeeperCreationException extends RuntimeException {
     public ZooKeeperCreationException(String message) {
         super(message);
     }
+
 }

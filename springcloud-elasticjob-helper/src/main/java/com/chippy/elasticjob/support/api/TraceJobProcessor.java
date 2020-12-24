@@ -1,14 +1,14 @@
-package com.chippy.elasticjob.support.api.common;
+package com.chippy.elasticjob.support.api;
 
 /**
  * 定时任务业务处理器
  * 这是业务类一定要实现的接口，否则任务将找不到对应的任务处理器进行处理
- * 一般来说我们底层任务操作动作还是会借助{@link ElasticJobProcessor}的实现类进行操作
+ * 一般来说我们底层任务操作动作还是会借助{@link TraceJobHandler}的实现类进行操作
  *
  * @author: chippy
  * @datetime: 2020-11-12 20:02
  */
-public interface ElasticJobBusinessProcessor<T> {
+public interface TraceJobProcessor<T> {
 
     /**
      * 处理实现定时应用的业务内容

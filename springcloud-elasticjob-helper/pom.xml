@@ -27,11 +27,6 @@
             <artifactId>elasticjob-lite-lifecycle</artifactId>
             <version>3.0.0-alpha</version>
         </dependency>
-        <dependency>
-            <groupId>tk.mybatis</groupId>
-            <artifactId>mapper-spring-boot-starter</artifactId>
-            <version>2.1.4</version>
-        </dependency>
     </dependencies>
 
 </project>

@@ -11,7 +11,7 @@ import org.apache.shardingsphere.elasticjob.api.listener.ShardingContexts;
  * @author chippy
  **/
 @Slf4j
-public class MonitorElasticJobListener implements ElasticJobListener {
+public class MonitorJobListener implements ElasticJobListener {
 
     @Override
     public void beforeJobExecuted(ShardingContexts shardingContexts) {

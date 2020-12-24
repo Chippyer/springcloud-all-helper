@@ -1,4 +1,4 @@
-package com.chippy.elasticjob.support.domain.enums;
+package com.chippy.elasticjob.support.enums;
 
 /**
  * 任务状态枚举定义

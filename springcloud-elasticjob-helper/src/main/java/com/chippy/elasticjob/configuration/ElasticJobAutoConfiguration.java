@@ -1,16 +1,15 @@
 package com.chippy.elasticjob.configuration;
 
-import com.chippy.common.constants.GlobalConstantEnum;
-import com.chippy.common.utils.AnnotationUtils;
-import com.chippy.common.utils.ObjectsUtil;
+import com.chippy.core.common.constants.GlobalConstantEnum;
+import com.chippy.core.common.utils.AnnotationUtils;
+import com.chippy.core.common.utils.ObjectsUtil;
 import com.chippy.elasticjob.annotation.EnableElasticJob;
 import com.chippy.elasticjob.exception.ZooKeeperCreationException;
-import com.chippy.elasticjob.listener.UpdateJobInfoElasticJobListener;
-import com.chippy.elasticjob.support.api.db.IJobInfoService;
-import com.chippy.elasticjob.support.api.db.MysqlJobInfoService;
-import com.chippy.elasticjob.support.api.db.RedisJobInfoService;
+import com.chippy.elasticjob.listener.TraceJobListener;
+import com.chippy.elasticjob.support.api.RedisTraceJobOperationService;
+import com.chippy.elasticjob.support.api.TraceJobOperationService;
 import com.chippy.elasticjob.support.domain.ElasticJobMetaInfo;
-import com.chippy.elasticjob.support.domain.mapper.JobInfoMapper;
+import com.chippy.elasticjob.support.runner.FailToRetryRunner;
 import com.ulisesbocchio.jasyptspringboot.annotation.ConditionalOnMissingBean;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.elasticjob.api.listener.ElasticJobListener;
@@ -24,17 +23,14 @@ import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperConfiguration
 import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperRegistryCenter;
 import org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration;
 import org.apache.shardingsphere.elasticjob.tracing.rdb.listener.RDBTracingListenerConfiguration;
+import org.redisson.api.RLiveObjectService;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.data.redis.core.RedisTemplate;
-import tk.mybatis.spring.annotation.MapperScan;
 
 import javax.sql.DataSource;
 
@@ -45,8 +41,6 @@ import javax.sql.DataSource;
  */
 @Slf4j
 @Configuration
-@MapperScan(basePackages = {"com.chippy.elasticjob.support.domain.mapper"})
-@ComponentScan({"com.chippy.elasticjob.support"})
 public class ElasticJobAutoConfiguration implements ApplicationContextAware, InitializingBean {
 
     private ApplicationContext applicationContext;
@@ -55,6 +49,8 @@ public class ElasticJobAutoConfiguration implements ApplicationContextAware, Ini
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
+
+    // ======================== zk ========================
 
     @Bean
     @ConditionalOnMissingBean
@@ -99,22 +95,9 @@ public class ElasticJobAutoConfiguration implements ApplicationContextAware, Ini
         return new ZookeeperRegistryCenter(zkConfiguration());
     }
 
-    @Bean
-    @SuppressWarnings("unchecked")
-    public IJobInfoService jobInfoService() {
-        final EnableElasticJob enableElasticJob =
-            AnnotationUtils.getFirstAnnotation(applicationContext, EnableElasticJob.class);
-        final DBTypeEnum dbType = enableElasticJob.traceDbType();
-        switch (dbType) {
-            case MYSQL:
-                return new MysqlJobInfoService(applicationContext.getBean(JobInfoMapper.class));
-            case REDIS:
-                return new RedisJobInfoService(applicationContext.getBean(RedisTemplate.class));
-            default:
-                throw new BeanCreationException("注解[EnableElasticJob]中的DB类型不支持");
-        }
-    }
+    // ======================== zk ========================
 
+    // ======================== elastic-job 原生支持API ========================
     @Bean
     @ConditionalOnMissingBean
     public JobConfigurationAPI jobConfigurationAPI() {
@@ -135,24 +118,50 @@ public class ElasticJobAutoConfiguration implements ApplicationContextAware, Ini
 
     @Bean
     @ConditionalOnMissingBean
-    public ElasticJobListener updateJobInfoElasticJobListener() {
-        return new UpdateJobInfoElasticJobListener(applicationContext.getBean(IJobInfoService.class));
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
     public TracingConfiguration<DataSource> tracingConfiguration(DataSource dataSource) {
         RDBTracingListenerConfiguration rdbTracingListenerConfiguration = new RDBTracingListenerConfiguration();
         return new TracingConfiguration<>(rdbTracingListenerConfiguration.getType(), dataSource);
     }
 
+    // ======================== elastic-job 原生支持API ========================
+
+    // ======================== 自定义支持 ========================
+
+    @Bean
+    public TraceJobOperationService traceJobOperationService(RLiveObjectService liveObjectService) {
+        return new RedisTraceJobOperationService(liveObjectService);
+    }
+
+    @Bean
+    public FailToRetryRunner failToRetryRunner(TraceJobOperationService traceJobOperationService) {
+        return new FailToRetryRunner(traceJobOperationService, this.getTraceMonitor());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ElasticJobListener updateJobInfoElasticJobListener() {
+        return new TraceJobListener(applicationContext.getBean(TraceJobOperationService.class), this.getTraceMonitor());
+    }
+
+    // ======================== 自定义支持 ========================
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        Environment environment = applicationContext.getEnvironment();
-        String failToRetryServerIp =
-            environment.getProperty(GlobalConstantEnum.ELASTIC_JOB_FAIL_RETRY_SERVER_IP.getConstantValue());
-        final ElasticJobMetaInfo elasticJobMetaInfo = ElasticJobMetaInfo.getInstance();
-        elasticJobMetaInfo.setFailToRetryServerIp(failToRetryServerIp);
+        if (this.getTraceMonitor()) {
+            final Environment environment = applicationContext.getEnvironment();
+            String failToRetryServerIp =
+                environment.getProperty(GlobalConstantEnum.ELASTIC_JOB_FAIL_RETRY_SERVER_IP.getConstantValue());
+            final ElasticJobMetaInfo elasticJobMetaInfo = ElasticJobMetaInfo.getInstance();
+            elasticJobMetaInfo.setFailToRetryServerIp(failToRetryServerIp);
+        }
+    }
+
+    private EnableElasticJob getEnableElasticJob() {
+        return AnnotationUtils.getFirstAnnotation(applicationContext, EnableElasticJob.class);
+    }
+
+    private boolean getTraceMonitor() {
+        return getEnableElasticJob().traceMonitor();
     }
 
 }
