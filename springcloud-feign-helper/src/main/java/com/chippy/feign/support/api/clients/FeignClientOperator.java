@@ -2,9 +2,9 @@ package com.chippy.feign.support.api.clients;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
-import com.chippy.common.response.Result;
-import com.chippy.common.utils.CommonSpringContext;
-import com.chippy.common.utils.ObjectsUtil;
+import com.chippy.core.common.response.Result;
+import com.chippy.core.common.utils.CommonSpringContext;
+import com.chippy.core.common.utils.ObjectsUtil;
 import com.chippy.feign.exception.FastClientInvokeException;
 import com.chippy.feign.support.api.processor.FeignClientProcessor;
 import com.chippy.feign.support.definition.FeignClientDefinition;

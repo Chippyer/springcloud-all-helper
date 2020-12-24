@@ -1,6 +1,6 @@
 package com.chippy.feign.support.api.clients;
 
-import com.chippy.common.response.Result;
+import com.chippy.core.common.response.Result;
 import com.chippy.feign.exception.FastClientInvokeException;
 import com.chippy.feign.support.definition.FeignClientDefinition;
 

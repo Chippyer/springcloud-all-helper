@@ -1,6 +1,6 @@
 package com.chippy.feign.support.definition;
 
-import com.chippy.common.utils.ObjectsUtil;
+import com.chippy.core.common.utils.ObjectsUtil;
 import com.chippy.feign.support.api.processor.FeignClientProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
