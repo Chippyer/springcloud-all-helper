@@ -8,6 +8,7 @@ import org.redisson.api.RLiveObjectService;
 import org.redisson.api.condition.Condition;
 import org.redisson.api.condition.Conditions;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,12 +29,18 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
 
     @Override
     public List<JobInfo> byOriginalJobName(String originalJobName) {
+        if (Objects.isNull(originalJobName)) {
+            return Collections.emptyList();
+        }
         return (List<JobInfo>)liveObjectService.find(JobInfo.class,
             Conditions.eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_ORIGINAL_NAME.getConstantValue(), originalJobName));
     }
 
     @Override
     public List<JobInfo> byOriginalJobName(String originalJobName, JobStatusEnum jobStatusEnum) {
+        if (Objects.isNull(jobStatusEnum)) {
+            return this.byOriginalJobName(originalJobName);
+        }
         final Condition eqOriginalCondition =
             Conditions.eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_ORIGINAL_NAME.getConstantValue(), originalJobName);
         final Condition eqStatusCondition = Conditions
@@ -44,11 +51,14 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
 
     @Override
     public JobInfo byJobName(String jobName) {
-        return liveObjectService.get(JobInfo.class, jobName);
+        return Objects.isNull(jobName) ? null : liveObjectService.get(JobInfo.class, jobName);
     }
 
     @Override
     public JobInfo byJobName(String jobName, JobStatusEnum jobStatusEnum) {
+        if (Objects.isNull(jobStatusEnum)) {
+            return this.byJobName(jobName);
+        }
         final JobInfo jobInfo = this.byJobName(jobName);
         if (Objects.isNull(jobInfo)) {
             return null;
@@ -71,6 +81,9 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
 
     @Override
     public boolean remove(JobInfo jobInfo) {
+        if (Objects.isNull(jobInfo)) {
+            throw new IllegalArgumentException("传入的存储任务参数为空，无法进行任务信息删除");
+        }
         liveObjectService.delete(jobInfo);
         return true;
     }

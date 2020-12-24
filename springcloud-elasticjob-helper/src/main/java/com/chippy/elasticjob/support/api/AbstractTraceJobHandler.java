@@ -18,6 +18,7 @@ import org.apache.shardingsphere.elasticjob.lite.lifecycle.api.JobStatisticsAPI;
 import org.apache.shardingsphere.elasticjob.lite.lifecycle.domain.JobBriefInfo;
 import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperRegistryCenter;
 import org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -97,7 +98,9 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         }
         final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, JobStatusEnum.READY);
         if (CollectionsUtils.isEmpty(jobInfos)) {
-            log.debug("需要删除的任务信息已不存在");
+            if (log.isDebugEnabled()) {
+                log.debug("需要删除的任务[" + originalJobName + "]信息已不存在");
+            }
             return;
         }
         final JobInfo existsJobInfo = jobInfos.get(0);
@@ -115,11 +118,16 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
     @Override
     public void updateJob(JobInfo jobInfo) {
         Assert.notNull(jobInfo, "需要更新的定时任务不能为空");
-        log.debug("更新定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "]");
+        if (log.isDebugEnabled()) {
+            log.debug("更新定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "]");
+        }
         try {
             final List<JobInfo> jobInfos =
                 traceJobOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
             if (CollectionsUtils.isEmpty(jobInfos)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("需要更新的任务[" + JSONUtil.toJsonStr(jobInfo) + "]信息已不存在");
+                }
                 this.createJob(jobInfo);
                 return;
             }
@@ -143,26 +151,33 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
 
     @Override
     public List<JobConfigurationPOJO> getJob(String originalJobName) {
-        try {
-            log.debug("获取定时任务:[" + originalJobName + "]");
-            final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, null);
-            return CollectionsUtils.isEmpty(jobInfos) ? Collections.emptyList() : jobInfos.stream()
-                .map(completeJobInfo -> jobConfigurationAPI.getJobConfiguration(completeJobInfo.getJobName()))
-                .filter(Objects::nonNull).collect(Collectors.toList());
-        } catch (NullPointerException e) {
-            log.error("要活动的定时任务:[" + originalJobName + "]不存在 -> [" + e.getMessage() + "]");
-            log.error("具体异常->", e);
-            return null;
+        if (Objects.isNull(originalJobName)) {
+            return Collections.emptyList();
         }
+        if (log.isDebugEnabled()) {
+            log.debug("获取定时任务:[" + originalJobName + "]");
+        }
+        final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, null);
+        if (CollectionUtils.isEmpty(jobInfos)) {
+            return Collections.emptyList();
+        }
+        return CollectionsUtils.isEmpty(jobInfos) ? Collections.emptyList() : jobInfos.stream()
+            .map(completeJobInfo -> jobConfigurationAPI.getJobConfiguration(completeJobInfo.getJobName()))
+            .filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     @Override
     public List<JobBriefInfo> getJobBriefInfo(String originalJobName) {
-        log.debug("获取简明定时任务集合信息:[" + originalJobName + "]");
         if (Objects.isNull(originalJobName)) {
             return null;
         }
+        if (log.isDebugEnabled()) {
+            log.debug("获取简明定时任务集合信息:[" + originalJobName + "]");
+        }
         final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, null);
+        if (CollectionUtils.isEmpty(jobInfos)) {
+            return Collections.emptyList();
+        }
         return CollectionsUtils.isEmpty(jobInfos) ? Collections.emptyList() :
             jobInfos.stream().map(jobInfo -> jobStatisticsAPI.getJobBriefInfo(jobInfo.getJobName()))
                 .filter(Objects::nonNull).collect(Collectors.toList());

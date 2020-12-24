@@ -41,13 +41,25 @@ public abstract class AbstractTraceJob<T> implements SimpleJob {
                 // TODO 记录一下ERROR MSG
                 return;
             }
-            T data = JSONUtil.toBean(jobParameter, this.getGenericClass());
+            T data = this.getJobParameter(jobParameter);
             elasticJobBusinessProcessor.processCronJob(data);
         } catch (Exception e) {
             String exceptionMessage = "异常信息-ex:[" + e.getMessage() + "]";
             log.error(String.format(LOG_TEMPLATE, exceptionMessage));
             throw e;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private T getJobParameter(String jobParameter) {
+        T data;
+        final Class<T> genericClass = this.getGenericClass();
+        if (Objects.equals(genericClass, String.class)) {
+            data = (T)jobParameter;
+        } else {
+            data = JSONUtil.toBean(jobParameter, this.getGenericClass());
+        }
+        return data;
     }
 
 }
