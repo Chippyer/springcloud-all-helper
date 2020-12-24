@@ -10,7 +10,6 @@ import com.chippy.elasticjob.support.api.RedisTraceJobOperationService;
 import com.chippy.elasticjob.support.api.TraceJobOperationService;
 import com.chippy.elasticjob.support.domain.ElasticJobMetaInfo;
 import com.chippy.elasticjob.support.runner.FailToRetryRunner;
-import com.ulisesbocchio.jasyptspringboot.annotation.ConditionalOnMissingBean;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.elasticjob.api.listener.ElasticJobListener;
 import org.apache.shardingsphere.elasticjob.lite.lifecycle.api.JobConfigurationAPI;
@@ -26,6 +25,7 @@ import org.apache.shardingsphere.elasticjob.tracing.rdb.listener.RDBTracingListe
 import org.redisson.api.RLiveObjectService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -54,7 +54,7 @@ public class ElasticJobAutoConfiguration implements ApplicationContextAware, Ini
 
     @Bean
     @ConditionalOnMissingBean
-    public ZookeeperConfiguration zkConfiguration() {
+    public ZookeeperConfiguration zookepperConfiguration() {
         Environment environment = applicationContext.getEnvironment();
         String serverListProperty =
             environment.getProperty(GlobalConstantEnum.ELASTIC_JOB_REGCENTER_SERVER_LIST.getConstantValue());
@@ -92,7 +92,7 @@ public class ElasticJobAutoConfiguration implements ApplicationContextAware, Ini
     @Bean(initMethod = "init")
     @ConditionalOnMissingBean
     public ZookeeperRegistryCenter zookeeperRegistryCenter() {
-        return new ZookeeperRegistryCenter(zkConfiguration());
+        return new ZookeeperRegistryCenter(zookepperConfiguration());
     }
 
     // ======================== zk ========================
@@ -138,8 +138,7 @@ public class ElasticJobAutoConfiguration implements ApplicationContextAware, Ini
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    public ElasticJobListener updateJobInfoElasticJobListener() {
+    public ElasticJobListener traceJobListener() {
         return new TraceJobListener(applicationContext.getBean(TraceJobOperationService.class), this.getTraceMonitor());
     }
 

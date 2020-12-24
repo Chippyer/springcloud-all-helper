@@ -1,11 +1,11 @@
 package com.chippy.redis.redisson.configuration;
 
 import com.chippy.redis.redisson.task.support.ScheduledTaskDefinitionResolver;
-import com.ulisesbocchio.jasyptspringboot.annotation.ConditionalOnMissingBean;
 import org.redisson.api.RLiveObjectService;
 import org.redisson.api.RedissonClient;
 import org.redisson.spring.starter.RedissonAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

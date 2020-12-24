@@ -1,5 +1,7 @@
 package com.chippy.elasticjob.support.domain;
 
+import com.chippy.core.common.utils.CronUtils;
+import com.chippy.elasticjob.support.enums.JobStatusEnum;
 import lombok.Data;
 import org.redisson.api.annotation.REntity;
 import org.redisson.api.annotation.RId;
@@ -71,7 +73,7 @@ public class JobInfo implements Serializable {
     /**
      * 分片数量
      */
-    private int shardingTotalCount;
+    private int shardingTotalCount = 1;
 
     /**
      * 分片参数
@@ -81,6 +83,128 @@ public class JobInfo implements Serializable {
     /**
      * 当前执行分片项
      */
-    private int shardingItem;
+    private int shardingItem = 0;
+
+    public JobInfo() {
+    }
+
+    /**
+     * 构建一个简单的任务信息
+     * <p>
+     * 以下字段信息默认值
+     * cron = 计算获得
+     * jobName = 计算获得
+     * taskId = null,
+     * shardingTotalCount = 1,
+     * shardingItem = 0,
+     * shardingParameter = null,
+     * jobParameter = null,
+     * status = READY,
+     * errorReason = null,
+     * deleted = false
+     *
+     * @param originalJobName 原始任务名称
+     * @param invokeDateTime  执行时间
+     * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
+     * @author chippy
+     */
+    public static JobInfo buildSimpleJobInfo(String originalJobName, Date invokeDateTime) {
+        return buildSimpleJobInfo(originalJobName, invokeDateTime, JobStatusEnum.READY);
+    }
+
+    /**
+     * 构建一个简单的任务信息
+     * <p>
+     * 以下字段信息默认值
+     * cron = 计算获得
+     * jobName = 计算获得
+     * taskId = null,
+     * shardingTotalCount = 1,
+     * shardingItem = 0,
+     * shardingParameter = null,
+     * status = READY,
+     * errorReason = null,
+     * deleted = false
+     *
+     * @param originalJobName 原始任务名称
+     * @param jobParameter    任务参数
+     * @param invokeDateTime  执行时间
+     * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
+     * @author chippy
+     */
+    public static JobInfo buildSimpleJobInfo(String originalJobName, String jobParameter, Date invokeDateTime) {
+        return buildSimpleJobInfo(originalJobName, jobParameter, invokeDateTime, JobStatusEnum.READY);
+    }
+
+    /**
+     * 构建一个简单的任务信息
+     * <p>
+     * 以下字段信息默认值
+     * cron = 计算获得
+     * jobName = 计算获得
+     * taskId = null,
+     * shardingTotalCount = 1,
+     * shardingItem = 0,
+     * shardingParameter = null,
+     * jobParameter = null,
+     * errorReason = null,
+     * deleted = false
+     *
+     * @param originalJobName 任务名称
+     * @param invokeDateTime  执行时间
+     * @param jobStatusEnum   任务状态
+     * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
+     * @author chippy
+     */
+    public static JobInfo buildSimpleJobInfo(String originalJobName, Date invokeDateTime, JobStatusEnum jobStatusEnum) {
+        return buildSimpleJobInfo(originalJobName, null, invokeDateTime, jobStatusEnum);
+    }
+
+    /**
+     * 构建一个简单的任务信息
+     * <p>
+     * 以下字段信息默认值
+     * cron = 计算获得
+     * jobName = 计算获得
+     * taskId = null,
+     * shardingTotalCount = 1,
+     * shardingItem = 0,
+     * shardingParameter = null,
+     * errorReason = null,
+     * deleted = false
+     *
+     * @param originalJobName 原始任务名称
+     * @param jobParameter    参数内容
+     * @param invokeDateTime  执行时间
+     * @param jobStatusEnum   任务状态
+     * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
+     * @author chippy
+     */
+    public static JobInfo buildSimpleJobInfo(String originalJobName, String jobParameter, Date invokeDateTime,
+        JobStatusEnum jobStatusEnum) {
+        return new JobInfo(originalJobName, jobParameter, invokeDateTime, jobStatusEnum);
+    }
+
+    private JobInfo(String originalJobName, String jobParameter, Date invokeDateTime, JobStatusEnum jobStatusEnum) {
+        this(originalJobName, originalJobName + ":" + System.currentTimeMillis(), CronUtils.getCron(invokeDateTime),
+            invokeDateTime, null, 1, 0, null, jobParameter, jobStatusEnum.toString(), null, null);
+    }
+
+    private JobInfo(String originalJobName, String jobName, String cron, Date invokeDateTime, String taskId,
+        Integer shardingTotalCount, Integer shardingItem, String shardingParameter, String jobParameter, String status,
+        String errorReason, String invokeServiceClass) {
+        this.originalJobName = originalJobName;
+        this.jobName = jobName;
+        this.cron = cron;
+        this.invokeDateTime = invokeDateTime;
+        this.jobParameter = jobParameter;
+        this.status = status;
+        this.errorReason = errorReason;
+        this.invokeServiceClass = invokeServiceClass;
+        this.taskId = taskId;
+        this.shardingTotalCount = shardingTotalCount;
+        this.shardingItem = shardingItem;
+        this.shardingParameter = shardingParameter;
+    }
 
 }

@@ -3,6 +3,7 @@ package com.chippy.elasticjob.support.api;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.json.JSONUtil;
 import com.chippy.core.common.utils.CollectionsUtils;
+import com.chippy.elasticjob.exception.DuplicateCreationException;
 import com.chippy.elasticjob.support.domain.JobInfo;
 import com.chippy.elasticjob.support.enums.JobStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,7 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
     private TracingConfiguration tracingConfiguration;
 
     @Resource
-    private TraceJobOperationService completeJobInfOperationService;
+    private TraceJobOperationService traceJobOperationService;
 
     public abstract ElasticJob getJob();
 
@@ -65,23 +66,27 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
             if (log.isDebugEnabled()) {
                 log.debug("创建定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "]");
             }
-
-            JobConfiguration jobConfig =
-                JobConfiguration.newBuilder(jobInfo.getJobName(), jobInfo.getShardingTotalCount())
-                    .cron(jobInfo.getCron()).jobParameter(jobInfo.getJobParameter()).failover(Boolean.TRUE)
-                    .shardingItemParameters(jobInfo.getShardingParameter()).build();
-            new ScheduleJobBootstrap(registryCenter, this.getJob(), jobConfig, tracingConfiguration, elasticJobListener)
-                .schedule();
-
-            final JobInfo existsJobInfo = completeJobInfOperationService.byJobName(jobInfo.getJobName());
-            if (Objects.isNull(existsJobInfo)) {
-                jobInfo.setInvokeServiceClass(this.getClass().getName());
-                completeJobInfOperationService.insert(jobInfo);
+            final List<JobInfo> jobInfos =
+                traceJobOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
+            if (CollectionsUtils.isNotEmpty(jobInfos)) {
+                throw new DuplicateCreationException("任务信息[" + jobInfo.getOriginalJobName() + "]已存在");
             }
+            this.doCreateJob(jobInfo);
+            jobInfo.setInvokeServiceClass(this.getClass().getName());
+            traceJobOperationService.insert(jobInfo);
         } catch (Exception e) {
-            log.error(String.format(getErrorMessageFormat(), e.getMessage()));
+            log.error(String.format(getErrorMessageFormat() + "-%s", e.getMessage()));
             throw e;
         }
+    }
+
+    private void doCreateJob(JobInfo jobInfo) {
+        JobConfiguration jobConfig =
+            JobConfiguration.newBuilder(jobInfo.getJobName(), jobInfo.getShardingTotalCount()).cron(jobInfo.getCron())
+                .jobParameter(jobInfo.getJobParameter()).failover(Boolean.TRUE)
+                .shardingItemParameters(jobInfo.getShardingParameter()).build();
+        new ScheduleJobBootstrap(registryCenter, this.getJob(), jobConfig, tracingConfiguration, elasticJobListener)
+            .schedule();
     }
 
     @Override
@@ -90,14 +95,13 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         if (log.isDebugEnabled()) {
             log.debug("移除定时任务:[" + originalJobName + "]");
         }
-        final List<JobInfo> jobInfos =
-            completeJobInfOperationService.byOriginalJobName(originalJobName, JobStatusEnum.READY);
+        final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, JobStatusEnum.READY);
         if (CollectionsUtils.isEmpty(jobInfos)) {
             log.debug("需要删除的任务信息已不存在");
             return;
         }
-        final JobInfo jobInfo = jobInfos.get(0);
-        this.doRemove(jobInfo);
+        final JobInfo existsJobInfo = jobInfos.get(0);
+        this.doRemove(existsJobInfo);
     }
 
     private void doRemove(JobInfo jobInfo) {
@@ -105,7 +109,7 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         jobOperateAPI.disable(jobName, null);
         jobOperateAPI.remove(jobName, null);
         jobInfo.setStatus(JobStatusEnum.OVER.toString());
-        completeJobInfOperationService.update(jobInfo);
+        traceJobOperationService.update(jobInfo);
     }
 
     @Override
@@ -113,9 +117,9 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         Assert.notNull(jobInfo, "需要更新的定时任务不能为空");
         log.debug("更新定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "]");
         try {
-            final List<JobInfo> completeJobInfos =
-                completeJobInfOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
-            if (CollectionsUtils.isEmpty(completeJobInfos)) {
+            final List<JobInfo> jobInfos =
+                traceJobOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
+            if (CollectionsUtils.isEmpty(jobInfos)) {
                 this.createJob(jobInfo);
                 return;
             }
@@ -127,7 +131,8 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
                ---
                故此此处不进行任何修改操作，用删除插入两个动作进行弥补
              */
-            this.doRemove(jobInfo);
+            final JobInfo existsJobInfo = jobInfos.get(0);
+            this.doRemove(existsJobInfo);
             this.createJob(jobInfo);
         } catch (Exception e) {
             String exceptionMessage = "更新的定时任务:[" + jobInfo.getJobName() + "]信息已不存在 -> [" + e.getMessage() + "]";
@@ -140,7 +145,7 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
     public List<JobConfigurationPOJO> getJob(String originalJobName) {
         try {
             log.debug("获取定时任务:[" + originalJobName + "]");
-            final List<JobInfo> jobInfos = completeJobInfOperationService.byOriginalJobName(originalJobName, null);
+            final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, null);
             return CollectionsUtils.isEmpty(jobInfos) ? Collections.emptyList() : jobInfos.stream()
                 .map(completeJobInfo -> jobConfigurationAPI.getJobConfiguration(completeJobInfo.getJobName()))
                 .filter(Objects::nonNull).collect(Collectors.toList());
@@ -157,7 +162,7 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         if (Objects.isNull(originalJobName)) {
             return null;
         }
-        final List<JobInfo> jobInfos = completeJobInfOperationService.byOriginalJobName(originalJobName, null);
+        final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, null);
         return CollectionsUtils.isEmpty(jobInfos) ? Collections.emptyList() :
             jobInfos.stream().map(jobInfo -> jobStatisticsAPI.getJobBriefInfo(jobInfo.getJobName()))
                 .filter(Objects::nonNull).collect(Collectors.toList());

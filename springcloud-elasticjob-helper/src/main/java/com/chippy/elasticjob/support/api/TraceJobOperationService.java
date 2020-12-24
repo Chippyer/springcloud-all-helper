@@ -21,9 +21,11 @@ public interface TraceJobOperationService {
 
     JobInfo byJobName(String jobName, JobStatusEnum jobStatusEnum);
 
-    void insert(JobInfo completeJobInfo);
+    void insert(JobInfo jobInfo);
 
-    boolean update(JobInfo completeJobInfo);
+    boolean update(JobInfo jobInfo);
+
+    boolean remove(JobInfo jobInfo);
 
     List<JobInfo> getUnperformedTask();
 

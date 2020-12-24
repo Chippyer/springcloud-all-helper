@@ -14,7 +14,6 @@ public enum GlobalConstantEnum {
     ELASTIC_JOB_REGCENTER_SESSION_TIMEOUT_MS("elastic-job.reg-center.session-timeout-ms", "ZK最大睡眠时间"),
     ELASTIC_JOB_REGCENTER_MAX_SLEEP_TIME_MS("elastic-job.reg-center.max-sleep-time-ms", "ZK操作超时时间"),
     ELASTIC_JOB_FAIL_RETRY_SERVER_IP("elastic-job.fail-retry-server-ip", "ElasticJob重启丢失任务重试服务IP地址"),
-    ELASTIC_JOB_TRACE_MONITOR("elastic-job.trace-monitor", "是否开启任务状态跟踪监控"),
     ELASTIC_JOB_INFO_FILED_STATUS("status", "任务信息状态字段"),
     ELASTIC_JOB_INFO_FILED_ORIGINAL_NAME("originalJobName", "原任务名称字段"),
     ;
