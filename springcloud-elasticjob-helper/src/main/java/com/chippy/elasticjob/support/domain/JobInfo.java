@@ -92,80 +92,7 @@ public class JobInfo implements Serializable {
      * <p>
      * 以下字段信息默认值
      * cron = 计算获得
-     * jobName = 计算获得
-     * taskId = null,
-     * shardingTotalCount = 1,
-     * shardingItem = 0,
-     * shardingParameter = null,
-     * jobParameter = null,
-     * status = READY,
-     * errorReason = null,
-     * deleted = false
-     *
-     * @param originalJobName 原始任务名称
-     * @param invokeDateTime  执行时间
-     * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
-     * @author chippy
-     */
-    public static JobInfo buildSimpleJobInfo(String originalJobName, String invokeDateTime) {
-        return buildSimpleJobInfo(originalJobName, invokeDateTime, JobStatusEnum.READY);
-    }
-
-    /**
-     * 构建一个简单的任务信息
-     * <p>
-     * 以下字段信息默认值
-     * cron = 计算获得
-     * jobName = 计算获得
-     * taskId = null,
-     * shardingTotalCount = 1,
-     * shardingItem = 0,
-     * shardingParameter = null,
-     * status = READY,
-     * errorReason = null,
-     * deleted = false
-     *
-     * @param originalJobName 原始任务名称
-     * @param jobParameter    任务参数
-     * @param invokeDateTime  执行时间
-     * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
-     * @author chippy
-     */
-    public static JobInfo buildSimpleJobInfo(String originalJobName, String jobParameter, String invokeDateTime) {
-        return buildSimpleJobInfo(originalJobName, jobParameter, invokeDateTime, JobStatusEnum.READY);
-    }
-
-    /**
-     * 构建一个简单的任务信息
-     * <p>
-     * 以下字段信息默认值
-     * cron = 计算获得
-     * jobName = 计算获得
-     * taskId = null,
-     * shardingTotalCount = 1,
-     * shardingItem = 0,
-     * shardingParameter = null,
-     * jobParameter = null,
-     * errorReason = null,
-     * deleted = false
-     *
-     * @param originalJobName 任务名称
-     * @param invokeDateTime  执行时间
-     * @param jobStatusEnum   任务状态
-     * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
-     * @author chippy
-     */
-    public static JobInfo buildSimpleJobInfo(String originalJobName, String invokeDateTime,
-        JobStatusEnum jobStatusEnum) {
-        return buildSimpleJobInfo(originalJobName, null, invokeDateTime, jobStatusEnum);
-    }
-
-    /**
-     * 构建一个简单的任务信息
-     * <p>
-     * 以下字段信息默认值
-     * cron = 计算获得
-     * jobName = 计算获得
+     * jobName = null
      * taskId = null,
      * shardingTotalCount = 1,
      * shardingItem = 0,
@@ -186,25 +113,16 @@ public class JobInfo implements Serializable {
     }
 
     private JobInfo(String originalJobName, String jobParameter, String invokeDateTime, JobStatusEnum jobStatusEnum) {
-        this(originalJobName, originalJobName + ":" + System.currentTimeMillis(), CronUtils.getCron(invokeDateTime),
-            invokeDateTime, null, 1, 0, null, jobParameter, jobStatusEnum.toString(), null, null);
+        this(originalJobName, CronUtils.getCron(invokeDateTime), invokeDateTime, jobParameter,
+            jobStatusEnum.toString());
     }
 
-    private JobInfo(String originalJobName, String jobName, String cron, String invokeDateTime, String taskId,
-        Integer shardingTotalCount, Integer shardingItem, String shardingParameter, String jobParameter, String status,
-        String errorReason, String invokeServiceClass) {
+    private JobInfo(String originalJobName, String cron, String invokeDateTime, String jobParameter, String status) {
         this.originalJobName = originalJobName;
-        this.jobName = jobName;
         this.cron = cron;
         this.invokeDateTime = invokeDateTime;
         this.jobParameter = jobParameter;
         this.status = status;
-        this.errorReason = errorReason;
-        this.invokeServiceClass = invokeServiceClass;
-        this.taskId = taskId;
-        this.shardingTotalCount = shardingTotalCount;
-        this.shardingItem = shardingItem;
-        this.shardingParameter = shardingParameter;
     }
 
 }

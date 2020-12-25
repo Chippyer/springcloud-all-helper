@@ -17,11 +17,11 @@ import java.util.Objects;
 @Slf4j
 public class TraceJobListener extends MonitorJobListener {
 
-    private TraceJobOperationService completeJobInfOperationService;
+    private TraceJobOperationService traceJobOperationService;
     private boolean traceMonitor;
 
-    public TraceJobListener(TraceJobOperationService completeJobInfOperationService, boolean traceMonitor) {
-        this.completeJobInfOperationService = completeJobInfOperationService;
+    public TraceJobListener(TraceJobOperationService traceJobOperationService, boolean traceMonitor) {
+        this.traceJobOperationService = traceJobOperationService;
         this.traceMonitor = traceMonitor;
     }
 
@@ -29,7 +29,7 @@ public class TraceJobListener extends MonitorJobListener {
     public void beforeJobExecuted(ShardingContexts shardingContexts) {
         super.beforeJobExecuted(shardingContexts);
         if (traceMonitor) {
-            final JobInfo jobInfo = completeJobInfOperationService.byJobName(shardingContexts.getJobName());
+            final JobInfo jobInfo = traceJobOperationService.byJobName(shardingContexts.getJobName());
             if (Objects.isNull(jobInfo)) {
                 if (log.isErrorEnabled()) {
                     log.error("通过任务名称查询状态为空, 此处不对任务信息进行记录");
@@ -39,7 +39,7 @@ public class TraceJobListener extends MonitorJobListener {
             jobInfo.setShardingItem(shardingContexts.getCurrentJobEventSamplingCount());
             jobInfo.setTaskId(shardingContexts.getTaskId());
             jobInfo.setStatus(JobStatusEnum.ING.toString());
-            completeJobInfOperationService.update(jobInfo);
+            traceJobOperationService.update(jobInfo);
         }
     }
 
@@ -47,7 +47,7 @@ public class TraceJobListener extends MonitorJobListener {
     public void afterJobExecuted(ShardingContexts shardingContexts) {
         super.afterJobExecuted(shardingContexts);
         if (traceMonitor) {
-            final JobInfo jobInfo = completeJobInfOperationService.byJobName(shardingContexts.getJobName());
+            final JobInfo jobInfo = traceJobOperationService.byJobName(shardingContexts.getJobName());
             if (Objects.isNull(jobInfo)) {
                 if (log.isErrorEnabled()) {
                     log.error("通过任务名称查询状态为空, 此处不对任务信息进行记录");
@@ -55,7 +55,7 @@ public class TraceJobListener extends MonitorJobListener {
                 return;
             }
             jobInfo.setStatus(JobStatusEnum.OVER.toString());
-            completeJobInfOperationService.update(jobInfo);
+            traceJobOperationService.update(jobInfo);
         }
     }
 

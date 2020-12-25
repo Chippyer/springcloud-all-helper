@@ -1,6 +1,5 @@
 package com.chippy.elasticjob.support.api;
 
-import com.chippy.elasticjob.support.domain.JobInfo;
 import org.apache.shardingsphere.elasticjob.infra.pojo.JobConfigurationPOJO;
 import org.apache.shardingsphere.elasticjob.lite.lifecycle.domain.JobBriefInfo;
 
@@ -23,7 +22,7 @@ public interface TraceJobHandler {
      *
      * @author chippy
      */
-    void createJob(JobInfo jobInfo);
+    void createJob(String originalJobName, String jobParameter, String invokeDateTime);
 
     /**
      * 检查任务状态[准备中]的任务，内部调用{@link org.apache.shardingsphere.elasticjob.lite.lifecycle.api.JobOperateAPI}
@@ -49,7 +48,7 @@ public interface TraceJobHandler {
      *
      * @author chippy
      */
-    void updateJob(JobInfo jobInfo);
+    void updateJob(String originalJobName, String jobParameter, String invokeDateTime);
 
     /**
      * 更新一个定时任务信息
@@ -62,7 +61,7 @@ public interface TraceJobHandler {
      *
      * @author chippy
      */
-    void updateJob(JobInfo jobInfo, boolean isCheckNull);
+    void updateJob(String jobName, String originalJobName, String jobParameter, String invokeDateTime);
 
     /**
      * 获取原始任务名称对应的所有任务信息

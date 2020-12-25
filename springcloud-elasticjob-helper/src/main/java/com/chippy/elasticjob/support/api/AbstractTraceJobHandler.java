@@ -1,9 +1,9 @@
 package com.chippy.elasticjob.support.api;
 
 import cn.hutool.core.lang.Assert;
-import cn.hutool.json.JSONUtil;
 import com.chippy.core.common.utils.CollectionsUtils;
 import com.chippy.elasticjob.exception.DuplicateCreationException;
+import com.chippy.elasticjob.exception.JobInfoModifyException;
 import com.chippy.elasticjob.support.domain.JobInfo;
 import com.chippy.elasticjob.support.enums.JobStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -62,18 +62,24 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
     public abstract String getErrorMessageFormat();
 
     @Override
-    public void createJob(JobInfo jobInfo) {
+    public void createJob(String originalJobName, String jobParameter, String invokeDateTime) {
+        Assert.notNull(originalJobName, "需要更新的定时原任务名称不能为空");
+        Assert.notNull(invokeDateTime, "预定执行时间不能为空");
+        if (log.isDebugEnabled()) {
+            log.debug(
+                "创建定时任务[originalJobName:" + originalJobName + ", jobParameter:" + jobParameter + ", invokeDateTime:"
+                    + invokeDateTime + "]");
+        }
+
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("创建定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "]");
-            }
             final List<JobInfo> jobInfos =
-                traceJobOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
+                traceJobOperationService.byOriginalJobName(originalJobName, JobStatusEnum.READY);
             if (CollectionsUtils.isNotEmpty(jobInfos)) {
-                throw new DuplicateCreationException("任务信息[" + jobInfo.getOriginalJobName() + "]已存在");
+                throw new DuplicateCreationException("任务信息[" + originalJobName + "]已存在");
             }
+
+            final JobInfo jobInfo = this.buildReadyStatusJobInfo(originalJobName, jobParameter, invokeDateTime);
             this.doCreateJob(jobInfo);
-            jobInfo.setInvokeServiceClass(this.getClass().getName());
             traceJobOperationService.insert(jobInfo);
         } catch (Exception e) {
             log.error(String.format(getErrorMessageFormat() + "-%s", e.getMessage()));
@@ -96,37 +102,53 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         if (log.isDebugEnabled()) {
             log.debug("移除定时任务:[" + originalJobName + "]");
         }
+
         final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, JobStatusEnum.READY);
-        if (CollectionsUtils.isEmpty(jobInfos)) {
-            if (log.isDebugEnabled()) {
-                log.debug("需要删除的任务[" + originalJobName + "]信息已不存在");
-            }
-            return;
+        if (CollectionsUtils.isNotEmpty(jobInfos)) {
+            this.doRemove(jobInfos.get(0));
         }
-        final JobInfo existsJobInfo = jobInfos.get(0);
-        this.doRemove(existsJobInfo);
     }
 
     private void doRemove(JobInfo jobInfo) {
         String jobName = jobInfo.getJobName();
         jobOperateAPI.disable(jobName, null);
         jobOperateAPI.remove(jobName, null);
-        jobInfo.setStatus(JobStatusEnum.OVER.toString());
+        this.buildOverStatusJobInfo(jobInfo);
         traceJobOperationService.update(jobInfo);
     }
 
     @Override
-    public void updateJob(JobInfo jobInfo) {
-        Assert.notNull(jobInfo, "需要更新的定时任务不能为空");
-        this.updateJob(jobInfo, true);
+    public void updateJob(String originalJobName, String jobParameter, String invokeDateTime) {
+        Assert.notNull(originalJobName, "需要更新的定时原任务名称不能为空");
+        Assert.notNull(invokeDateTime, "预定执行时间不能为空");
+        if (log.isDebugEnabled()) {
+            log.debug(
+                "更新定时任务[originalJobName:" + originalJobName + ", jobParameter:" + jobParameter + ", invokeDateTime:"
+                    + invokeDateTime + "]");
+        }
+
+        final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, JobStatusEnum.READY);
+        if (CollectionsUtils.isEmpty(jobInfos)) {
+            throw new JobInfoModifyException("更新任务[" + originalJobName + "]不存在");
+        }
+        this.doUpdateJob(originalJobName, jobParameter, invokeDateTime, jobInfos.get(0));
     }
 
     @Override
-    public void updateJob(JobInfo jobInfo, boolean isCheckNull) {
-        Assert.notNull(jobInfo, "需要更新的定时任务不能为空");
+    public void updateJob(String jobName, String originalJobName, String jobParameter, String invokeDateTime) {
+        Assert.notNull(originalJobName, "需要更新的定时原任务名称不能为空");
+        Assert.notNull(invokeDateTime, "预定执行时间不能为空");
         if (log.isDebugEnabled()) {
-            log.debug("更新定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "], 是否检查非空:[" + isCheckNull + "]");
+            log.debug(
+                "更新定时任务[jobName:" + jobName + ", originalJobName:" + originalJobName + ", jobParameter:" + jobParameter
+                    + ", invokeDateTime:" + invokeDateTime + "]");
         }
+
+        if (Objects.isNull(jobName)) {
+            this.updateJob(originalJobName, jobParameter, invokeDateTime);
+            return;
+        }
+
         try {
             /*
                为了避免任务名称变更，出现两条同样的逻辑但是不同时间点执行的任务
@@ -135,29 +157,20 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
                ---
                故此此处不进行任何修改操作，用删除插入两个动作进行弥补
              */
-            if (isCheckNull) {
-                final List<JobInfo> jobInfos =
-                    traceJobOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
-                if (CollectionsUtils.isEmpty(jobInfos)) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("需要更新的任务[" + JSONUtil.toJsonStr(jobInfo) + "]信息已不存在");
-                    }
-                    this.createJob(jobInfo);
-                    return;
-                }
-                final JobInfo existsJobInfo = jobInfos.get(0);
-                log.debug("job  name: " + existsJobInfo.getJobName());
-                this.doRemove(existsJobInfo);
-            } else {
-                log.debug("job  name: " + jobInfo.getJobName());
-                this.doRemove(jobInfo);
-            }
-            this.createJob(jobInfo);
+            this.doUpdateJob(originalJobName, jobParameter, invokeDateTime,
+                traceJobOperationService.byJobName(jobName));
         } catch (Exception e) {
-            String exceptionMessage = "更新的定时任务:[" + jobInfo.getJobName() + "]信息已不存在 -> [" + e.getMessage() + "]";
+            String exceptionMessage = "更新的定时任务:[" + originalJobName + "]信息已不存在-[" + e.getMessage() + "]";
             log.error(exceptionMessage);
             throw e;
         }
+    }
+
+    private void doUpdateJob(String originalJobName, String jobParameter, String invokeDateTime, JobInfo jobInfo) {
+        if (Objects.nonNull(jobInfo)) {
+            this.doRemove(jobInfo);
+        }
+        this.createJob(originalJobName, jobParameter, invokeDateTime);
     }
 
     @Override
@@ -192,6 +205,22 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         return CollectionsUtils.isEmpty(jobInfos) ? Collections.emptyList() :
             jobInfos.stream().map(jobInfo -> jobStatisticsAPI.getJobBriefInfo(jobInfo.getJobName()))
                 .filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    private JobInfo buildReadyStatusJobInfo(String originalJobName, String jobParameter, String invokeDateTime) {
+        final JobInfo jobInfo =
+            JobInfo.buildSimpleJobInfo(originalJobName, jobParameter, invokeDateTime, JobStatusEnum.READY);
+        jobInfo.setInvokeServiceClass(this.getClass().getName());
+        jobInfo.setJobName(this.generateJobName(originalJobName));
+        return jobInfo;
+    }
+
+    private void buildOverStatusJobInfo(JobInfo jobInfo) {
+        jobInfo.setStatus(JobStatusEnum.OVER.toString());
+    }
+
+    private String generateJobName(String originalJobName) {
+        return originalJobName + ":" + System.currentTimeMillis();
     }
 
 }
