@@ -8,7 +8,6 @@ import org.redisson.api.annotation.RId;
 import org.redisson.api.annotation.RIndex;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * ElasticJob任务信息
@@ -40,7 +39,7 @@ public class JobInfo implements Serializable {
     /**
      * 指定的任务时间date格式
      */
-    private Date invokeDateTime;
+    private String invokeDateTime;
 
     /**
      * 执行容器服务名称
@@ -108,7 +107,7 @@ public class JobInfo implements Serializable {
      * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
      * @author chippy
      */
-    public static JobInfo buildSimpleJobInfo(String originalJobName, Date invokeDateTime) {
+    public static JobInfo buildSimpleJobInfo(String originalJobName, String invokeDateTime) {
         return buildSimpleJobInfo(originalJobName, invokeDateTime, JobStatusEnum.READY);
     }
 
@@ -132,7 +131,7 @@ public class JobInfo implements Serializable {
      * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
      * @author chippy
      */
-    public static JobInfo buildSimpleJobInfo(String originalJobName, String jobParameter, Date invokeDateTime) {
+    public static JobInfo buildSimpleJobInfo(String originalJobName, String jobParameter, String invokeDateTime) {
         return buildSimpleJobInfo(originalJobName, jobParameter, invokeDateTime, JobStatusEnum.READY);
     }
 
@@ -156,7 +155,8 @@ public class JobInfo implements Serializable {
      * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
      * @author chippy
      */
-    public static JobInfo buildSimpleJobInfo(String originalJobName, Date invokeDateTime, JobStatusEnum jobStatusEnum) {
+    public static JobInfo buildSimpleJobInfo(String originalJobName, String invokeDateTime,
+        JobStatusEnum jobStatusEnum) {
         return buildSimpleJobInfo(originalJobName, null, invokeDateTime, jobStatusEnum);
     }
 
@@ -180,17 +180,17 @@ public class JobInfo implements Serializable {
      * @return com.oak.common.compments.elasticjob.support.domain.JobInfo
      * @author chippy
      */
-    public static JobInfo buildSimpleJobInfo(String originalJobName, String jobParameter, Date invokeDateTime,
+    public static JobInfo buildSimpleJobInfo(String originalJobName, String jobParameter, String invokeDateTime,
         JobStatusEnum jobStatusEnum) {
         return new JobInfo(originalJobName, jobParameter, invokeDateTime, jobStatusEnum);
     }
 
-    private JobInfo(String originalJobName, String jobParameter, Date invokeDateTime, JobStatusEnum jobStatusEnum) {
+    private JobInfo(String originalJobName, String jobParameter, String invokeDateTime, JobStatusEnum jobStatusEnum) {
         this(originalJobName, originalJobName + ":" + System.currentTimeMillis(), CronUtils.getCron(invokeDateTime),
             invokeDateTime, null, 1, 0, null, jobParameter, jobStatusEnum.toString(), null, null);
     }
 
-    private JobInfo(String originalJobName, String jobName, String cron, Date invokeDateTime, String taskId,
+    private JobInfo(String originalJobName, String jobName, String cron, String invokeDateTime, String taskId,
         Integer shardingTotalCount, Integer shardingItem, String shardingParameter, String jobParameter, String status,
         String errorReason, String invokeServiceClass) {
         this.originalJobName = originalJobName;

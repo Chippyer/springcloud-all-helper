@@ -52,6 +52,19 @@ public interface TraceJobHandler {
     void updateJob(JobInfo jobInfo);
 
     /**
+     * 更新一个定时任务信息
+     * <p>
+     * 如果需要的话
+     * 如果任务不存在则不进行创建，判断规则为 -> 任务{originalJobName}对应的任务状态为READY
+     * 存在则删除后重新创建
+     * <p>
+     * 一般来说调用更新操作之前就已经删除对应得任务了。
+     *
+     * @author chippy
+     */
+    void updateJob(JobInfo jobInfo, boolean isCheckNull);
+
+    /**
      * 获取原始任务名称对应的所有任务信息
      *
      * @author chippy

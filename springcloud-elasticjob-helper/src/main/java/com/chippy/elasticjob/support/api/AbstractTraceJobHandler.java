@@ -118,20 +118,16 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
     @Override
     public void updateJob(JobInfo jobInfo) {
         Assert.notNull(jobInfo, "需要更新的定时任务不能为空");
+        this.updateJob(jobInfo, true);
+    }
+
+    @Override
+    public void updateJob(JobInfo jobInfo, boolean isCheckNull) {
+        Assert.notNull(jobInfo, "需要更新的定时任务不能为空");
         if (log.isDebugEnabled()) {
-            log.debug("更新定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "]");
+            log.debug("更新定时任务:[" + JSONUtil.toJsonStr(jobInfo) + "], 是否检查非空:[" + isCheckNull + "]");
         }
         try {
-            final List<JobInfo> jobInfos =
-                traceJobOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
-            if (CollectionsUtils.isEmpty(jobInfos)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("需要更新的任务[" + JSONUtil.toJsonStr(jobInfo) + "]信息已不存在");
-                }
-                this.createJob(jobInfo);
-                return;
-            }
-
             /*
                为了避免任务名称变更，出现两条同样的逻辑但是不同时间点执行的任务
                列入：A任务需要进修修改， 查询任务状态后发现任务名称变更了查询不存在则新增任务任务状态B
@@ -139,8 +135,23 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
                ---
                故此此处不进行任何修改操作，用删除插入两个动作进行弥补
              */
-            final JobInfo existsJobInfo = jobInfos.get(0);
-            this.doRemove(existsJobInfo);
+            if (isCheckNull) {
+                final List<JobInfo> jobInfos =
+                    traceJobOperationService.byOriginalJobName(jobInfo.getOriginalJobName(), JobStatusEnum.READY);
+                if (CollectionsUtils.isEmpty(jobInfos)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("需要更新的任务[" + JSONUtil.toJsonStr(jobInfo) + "]信息已不存在");
+                    }
+                    this.createJob(jobInfo);
+                    return;
+                }
+                final JobInfo existsJobInfo = jobInfos.get(0);
+                log.debug("job  name: " + existsJobInfo.getJobName());
+                this.doRemove(existsJobInfo);
+            } else {
+                log.debug("job  name: " + jobInfo.getJobName());
+                this.doRemove(jobInfo);
+            }
             this.createJob(jobInfo);
         } catch (Exception e) {
             String exceptionMessage = "更新的定时任务:[" + jobInfo.getJobName() + "]信息已不存在 -> [" + e.getMessage() + "]";

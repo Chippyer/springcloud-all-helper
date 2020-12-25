@@ -1,5 +1,7 @@
 package com.chippy.core.common.utils;
 
+import cn.hutool.core.date.DateTime;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
@@ -36,6 +38,17 @@ public class CronUtils {
      */
     public static String getCron(Date date) {
         return formatDateByPattern(date);
+    }
+
+    /***
+     * convert Date to cron, eg "0 07 10 15 1 ? 2016"
+     *
+     * @param date 日期
+     * @return String
+     */
+    public static String getCron(String date) {
+        final DateTime dateTime = new DateTime(date, DateUtil.YYYY_MM_DD_HH_MM_SS);
+        return formatDateByPattern(dateTime);
     }
 
 }
