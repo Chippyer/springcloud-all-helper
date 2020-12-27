@@ -1,11 +1,11 @@
 # springcloud-all-helper
 基于SpringCloud的相关组件封装, 如Feign, Redis, RabbitMQ, ElasticJob...
 希望大家多多关注和使用, 一起讨论学习。	
-目前已实现Feign, Redis相关基础功能，详细示例查看[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
+目前已实现Feign, Redis相关基础功能，详细示例查看 [springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
 ___
 <h2>springcloud-feign-helper</h2>
 对于Feign调用任务的高度封装，让我们的请求变的更加简单。并且在扩展性上提供了支持。
-具体详细描述详见[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
+具体详细描述详见 [springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
 <h3>部分功能使用描述</h3>
 <h5>调度使用</h5>
 实现了更加简洁便利的实现请求的调度，让你只关心业务即可。此时你会问，那日志输入的代
@@ -143,7 +143,7 @@ public class CustomerProcessor implements FeignClientProcessor {
 
 <h2>springcloud-redis-helper</h2>
 底层依赖redisson框架，故此配置时参考redisson的相关配置文件进行配置。
-具体使用详见具体详细描述详见[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
+具体使用详见具体详细描述详见 [springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
 <h3>部分功能使用描述</h3>
 <h5>解决集群服务定时任务重复执行问题</h5>
 通常我们在一个服务集群部署时，定时任务会在多个实例上同时执行，但是我们
@@ -188,11 +188,11 @@ spring:
 ---
 <h2>springcloud-elasticjob-helper</h2>
 底层依赖elasticjob-lite-lifecycle(3.0.0-alpha)框架。注意这里只针对动态任务的封装。
-如果非动态任务类型请正常以来原生elastic-job框架进行实现。
+如果非动态任务类型请正常依赖原生elastic-job框架进行实现。
 本项目实现在elastic-job框架原有的功能基础上支持了更加灵活的动态任务使用(任务创建、更新、移除、查询、调用都将变的更加简单)，
-任务的相关API封装以及服务骤停后的未进行任务补偿运行机制(保证任务不会丢失或未执行)。
+任务的相关API封装以及服务骤停后的任务补偿机制(保证任务不会丢失或未执行)。
 由于项目以来springcloud-redis-helper故此需要配置redisson配置文件。
-具体使用详见具体详细描述详见[springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
+具体使用详见具体详细描述详见 [springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
 <h3>部分功能使用描述</h3>
 
 1. 通过注解EnableElasticJob打开功能支持
