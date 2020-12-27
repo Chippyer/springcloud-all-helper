@@ -5,7 +5,7 @@
 ___
 <h2>springcloud-feign-helper</h2>
 对于Feign调用任务的高度封装，让我们的请求变的更加简单。并且在扩展性上提供了支持。
-具体详细描述详见 [springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example "springcloud-helper-example")
+具体详细描述详见 [springcloud-helper-example](https://github.com/Chippyer/springcloud-helper-example)
 <h3>部分功能使用描述</h3>
 <h5>调度使用</h5>
 实现了更加简洁便利的实现请求的调度，让你只关心业务即可。此时你会问，那日志输入的代
