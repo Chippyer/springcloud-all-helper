@@ -4,6 +4,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * {@link Long}类型序列化
@@ -13,14 +14,27 @@ import java.nio.charset.StandardCharsets;
  */
 public class LongRedisSerializer implements RedisSerializer<Long> {
 
+    private static final long DEFAULT_VALUE = 0L;
+
     @Override
     public byte[] serialize(Long value) throws SerializationException {
+        if (Objects.isNull(value)) {
+            value = DEFAULT_VALUE;
+        }
         return value.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
     public Long deserialize(byte[] bytes) throws SerializationException {
-        return Long.valueOf(new String(bytes, StandardCharsets.UTF_8));
+        if (Objects.isNull(bytes)) {
+            return DEFAULT_VALUE;
+        }
+        final String resultStr = new String(bytes, StandardCharsets.UTF_8);
+        if (resultStr.indexOf("\"") > 0) {
+            final String replacedResultStr = resultStr.replaceAll("\"", "");
+            return Long.valueOf(replacedResultStr);
+        }
+        return Long.valueOf(resultStr);
     }
 
 }
