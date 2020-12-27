@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * @datetime 2020-12-16 16:12
  */
 @Configuration
-@ComponentScan({"com.chippy.redis.redisson.task.support"})
+@ComponentScan({"com.chippy.redis.redisson.task.support", "com.chippy.redis.configuration"})
 @AutoConfigureAfter(RedissonAutoConfiguration.class)
 public class RedissonHelperAutoConfiguration {
 

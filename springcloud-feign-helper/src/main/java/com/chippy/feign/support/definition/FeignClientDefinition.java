@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * FeignClientHelper相关的元素缓存集合信息, 以字典表的方式进行k-v存储
+ * XXXFeignClient的元素信息存储
  * <p>
  * 项目启动后, 直接将数据缓存到JVM中
  * 为避免数据错乱, 该类只公开提供查询操作
@@ -21,12 +21,12 @@ public class FeignClientDefinition {
     private static final int DEFAULT_CAPACITY = 128;
 
     /**
-     * 缓存存放集合
+     * 缓存元素信息集合
      */
     private static Map<String, Element> cache = new HashMap<>(DEFAULT_CAPACITY);
 
     /**
-     * 当前持有权限服务名称
+     * 当前服务名称
      */
     private static String server;
 
@@ -50,7 +50,7 @@ public class FeignClientDefinition {
     }
 
     /**
-     * 获取缓存实例
+     * 获取所有的元素信息
      *
      * @author chippy
      */
@@ -59,7 +59,7 @@ public class FeignClientDefinition {
     }
 
     /**
-     * 通过指定{business}获取缓存元素
+     * 通过指定{business}获取元素信息
      *
      * @param business 业务方法名
      * @author chippy
