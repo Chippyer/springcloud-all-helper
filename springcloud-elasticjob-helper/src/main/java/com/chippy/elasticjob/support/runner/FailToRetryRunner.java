@@ -60,38 +60,46 @@ public class FailToRetryRunner implements CommandLineRunner, ApplicationContextA
                 log.debug("当前机器IP地址不匹配配置地址-失败重试操作将不会执行");
                 return;
             }
-
-            final List<JobInfo> unperformedJobInfoTask = completeJobInfOperationService.getUnperformedTask();
-            if (ObjectsUtil.isNotEmpty(unperformedJobInfoTask)) {
-                final int size = unperformedJobInfoTask.size();
-                AtomicInteger successSize = new AtomicInteger(0);
-                AtomicInteger failSize = new AtomicInteger(0);
-                for (JobInfo jobInfo : unperformedJobInfoTask) {
-                    Class clazz = this.classForName(jobInfo);
-                    if (null == clazz) {
-                        String errorReason =
-                            "此[" + jobInfo.getInvokeServiceClass() + "]服务名称不在容其中, 请手动处理(将服务执行服务注入Spring容器中)";
-                        this.storeErrorReason(jobInfo, errorReason);
-                        continue;
-                    }
-                    final TraceJobHandler traceJobHandler = (TraceJobHandler)applicationContext.getBean(clazz);
-                    if (ObjectsUtil.isEmpty(traceJobHandler)) {
-                        String errorReason =
-                            "此[" + jobInfo.getInvokeServiceClass() + "]服务名称不在容其中, 请手动处理(将服务执行服务注入Spring容器中)";
-                        this.storeErrorReason(jobInfo, errorReason);
-                        continue;
-                    }
-                    try {
-                        this.doUpdateJob(jobInfo, traceJobHandler);
-                        successSize.incrementAndGet();
-                    } catch (Exception e) {
-                        log.error("失效重试任务-[" + jobInfo.getJobName() + "]执行异常-" + e.getMessage(), e);
-                        failSize.incrementAndGet();
-                    }
-                }
-                log.debug("总任务数量[" + size + "], 成功数量[" + successSize.get() + "], 失败数量[" + failSize.get());
-            }
+            this.failToRetry();
             log.debug("---------------------- 准备对ElasticJob中未执行的任务重新激活执行-完成 ----------------------");
+        }
+    }
+
+    private void failToRetry() {
+        final List<JobInfo> unperformedJobInfoTask = completeJobInfOperationService.getUnperformedTask();
+        if (ObjectsUtil.isNotEmpty(unperformedJobInfoTask)) {
+            final int size = unperformedJobInfoTask.size();
+            AtomicInteger successSize = new AtomicInteger(0);
+            AtomicInteger failSize = new AtomicInteger(0);
+            for (JobInfo jobInfo : unperformedJobInfoTask) {
+                Class clazz = this.classForName(jobInfo);
+                if (null == clazz) {
+                    String errorReason =
+                        "此[" + jobInfo.getInvokeServiceClass() + "]服务名称不在容其中, 请手动处理(将服务执行服务注入Spring容器中)";
+                    this.storeErrorReason(jobInfo, errorReason);
+                    continue;
+                }
+                final TraceJobHandler traceJobHandler = (TraceJobHandler)applicationContext.getBean(clazz);
+                if (ObjectsUtil.isEmpty(traceJobHandler)) {
+                    String errorReason =
+                        "此[" + jobInfo.getInvokeServiceClass() + "]服务名称不在容其中, 请手动处理(将服务执行服务注入Spring容器中)";
+                    this.storeErrorReason(jobInfo, errorReason);
+                    continue;
+                }
+                this.updateJob(successSize, failSize, jobInfo, traceJobHandler);
+            }
+            log.debug("总任务数量[" + size + "], 成功数量[" + successSize.get() + "], 失败数量[" + failSize.get());
+        }
+    }
+
+    private void updateJob(AtomicInteger successSize, AtomicInteger failSize, JobInfo jobInfo,
+        TraceJobHandler traceJobHandler) {
+        try {
+            this.doUpdateJob(jobInfo, traceJobHandler);
+            successSize.incrementAndGet();
+        } catch (Exception e) {
+            log.error("失效重试任务-[" + jobInfo.getJobName() + "]执行异常-" + e.getMessage(), e);
+            failSize.incrementAndGet();
         }
     }
 
