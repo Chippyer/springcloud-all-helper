@@ -24,6 +24,7 @@ import org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration;
 import org.apache.shardingsphere.elasticjob.tracing.rdb.listener.RDBTracingListenerConfiguration;
 import org.redisson.api.RLiveObjectService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
+import java.util.Objects;
 
 /**
  * ElasticJob自动配置类
@@ -129,7 +131,12 @@ public class ElasticJobAutoConfiguration implements ApplicationContextAware, Ini
 
     @Bean
     public TraceJobOperationService traceJobOperationService(RLiveObjectService liveObjectService) {
-        return new RedisTraceJobOperationService(liveObjectService);
+        final String server =
+            String.valueOf(applicationContext.getEnvironment().getProperty("spring.application.name"));
+        if (Objects.isNull(server)) {
+            throw new BeanCreationException("创建Bean[traceJobOperationService]异常-spring.application.name配置信息不能为空");
+        }
+        return new RedisTraceJobOperationService(liveObjectService, server);
     }
 
     @Bean

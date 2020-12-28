@@ -26,6 +26,12 @@ public class JobInfo implements Serializable {
     private String jobName;
 
     /**
+     * 服务名称{spring.application.name}
+     */
+    @RIndex
+    private String server;
+
+    /**
      * 原任务名称
      */
     @RIndex

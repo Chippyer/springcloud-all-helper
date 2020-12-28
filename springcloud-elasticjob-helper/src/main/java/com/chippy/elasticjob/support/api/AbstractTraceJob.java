@@ -27,7 +27,7 @@ public abstract class AbstractTraceJob<T> implements SimpleJob {
     private TraceJobOperationService completeJobInfOperationService;
 
     @Autowired
-    private TraceJobProcessor<T> elasticJobBusinessProcessor;
+    private TraceJobProcessor<T> traceJobProcessor;
 
     protected abstract Class<T> getGenericClass();
 
@@ -42,7 +42,7 @@ public abstract class AbstractTraceJob<T> implements SimpleJob {
                 return;
             }
             T data = this.getJobParameter(jobParameter);
-            elasticJobBusinessProcessor.processCronJob(data);
+            traceJobProcessor.processCronJob(data);
         } catch (Exception e) {
             String exceptionMessage = "异常信息-ex:[" + e.getMessage() + "]";
             log.error(String.format(LOG_TEMPLATE, exceptionMessage));

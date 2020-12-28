@@ -22,9 +22,11 @@ import java.util.Objects;
 public class RedisTraceJobOperationService implements TraceJobOperationService {
 
     private RLiveObjectService liveObjectService;
+    private String server;
 
-    public RedisTraceJobOperationService(RLiveObjectService liveObjectService) {
+    public RedisTraceJobOperationService(RLiveObjectService liveObjectService, String server) {
         this.liveObjectService = liveObjectService;
+        this.server = server;
     }
 
     @Override
@@ -32,8 +34,11 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
         if (Objects.isNull(originalJobName)) {
             return Collections.emptyList();
         }
-        return (List<JobInfo>)liveObjectService.find(JobInfo.class,
-            Conditions.eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_ORIGINAL_NAME.getConstantValue(), originalJobName));
+
+        final Condition eqOriginalJobNameCondition =
+            Conditions.eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_ORIGINAL_NAME.getConstantValue(), originalJobName);
+        return (List<JobInfo>)liveObjectService
+            .find(JobInfo.class, Conditions.and(eqOriginalJobNameCondition, this.getServerCondition()));
     }
 
     @Override
@@ -46,7 +51,7 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
         final Condition eqStatusCondition = Conditions
             .eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_STATUS.getConstantValue(), jobStatusEnum.toString());
         return (List<JobInfo>)liveObjectService
-            .find(JobInfo.class, Conditions.and(eqOriginalCondition, eqStatusCondition));
+            .find(JobInfo.class, Conditions.and(eqOriginalCondition, eqStatusCondition, this.getServerCondition()));
     }
 
     @Override
@@ -90,8 +95,14 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
 
     @Override
     public List<JobInfo> getUnperformedTask() {
-        return (List<JobInfo>)liveObjectService.find(JobInfo.class, Conditions
-            .eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_STATUS.getConstantValue(), JobStatusEnum.READY.toString()));
+        final Condition eqStatusCondition = Conditions
+            .eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_STATUS.getConstantValue(), JobStatusEnum.READY.toString());
+        return (List<JobInfo>)liveObjectService
+            .find(JobInfo.class, Conditions.and(eqStatusCondition, this.getServerCondition()));
+    }
+
+    private Condition getServerCondition() {
+        return Conditions.eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_SERVER.getConstantValue(), server);
     }
 
 }

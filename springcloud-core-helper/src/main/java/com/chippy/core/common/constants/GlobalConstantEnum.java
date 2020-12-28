@@ -16,6 +16,7 @@ public enum GlobalConstantEnum {
     ELASTIC_JOB_FAIL_RETRY_SERVER_IP("elastic-job.fail-retry-server-ip", "ElasticJob重启丢失任务重试服务IP地址"),
     ELASTIC_JOB_INFO_FILED_STATUS("status", "任务信息状态字段"),
     ELASTIC_JOB_INFO_FILED_ORIGINAL_NAME("originalJobName", "原任务名称字段"),
+    ELASTIC_JOB_INFO_FILED_SERVER("server", "服务名称"),
     ;
 
     private final String constantValue;

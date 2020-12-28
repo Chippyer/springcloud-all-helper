@@ -29,6 +29,19 @@
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-boot-starter</artifactId>
             <version>${redisson.version}</version>
+            <exclusions>
+                <!-- 为了兼容使用redisson最新的功能，但又为了兼容spring-boot-2.0.6 -->
+                <exclusion>
+                    <groupId>org.redisson</groupId>
+                    <artifactId>redisson-spring-data-23</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- 为了兼容使用redisson最新的功能，但又为了兼容spring-boot-2.0.6 -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-data-20</artifactId>
+            <version>3.9.0</version>
         </dependency>
     </dependencies>
 </project>
