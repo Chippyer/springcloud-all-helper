@@ -112,8 +112,8 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         String jobName = jobInfo.getJobName();
         jobOperateAPI.disable(jobName, null);
         jobOperateAPI.remove(jobName, null);
-        this.buildOverStatusJobInfo(jobInfo);
-        traceJobOperationService.update(jobInfo);
+        // this.buildOverStatusJobInfo(jobInfo);
+        traceJobOperationService.remove(jobInfo);
     }
 
     @Override
@@ -215,9 +215,9 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
         return jobInfo;
     }
 
-    private void buildOverStatusJobInfo(JobInfo jobInfo) {
-        jobInfo.setStatus(JobStatusEnum.OVER.toString());
-    }
+    // private void buildOverStatusJobInfo(JobInfo jobInfo) {
+    //     jobInfo.setStatus(JobStatusEnum.OVER.toString());
+    // }
 
     private String generateJobName(String originalJobName) {
         return originalJobName + ":" + System.currentTimeMillis();

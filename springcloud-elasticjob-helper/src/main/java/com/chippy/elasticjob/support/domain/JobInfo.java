@@ -65,7 +65,6 @@ public class JobInfo implements Serializable {
     /**
      * 任务状态{@link com.chippy.elasticjob.support.enums.JobStatusEnum}
      */
-    @RIndex
     private String status;
 
     /**

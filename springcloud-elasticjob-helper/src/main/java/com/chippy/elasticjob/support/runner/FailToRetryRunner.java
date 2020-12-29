@@ -27,11 +27,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class FailToRetryRunner implements CommandLineRunner, ApplicationContextAware {
 
-    private TraceJobOperationService completeJobInfOperationService;
+    private TraceJobOperationService traceJobOperationService;
     private boolean traceMonitor;
 
-    public FailToRetryRunner(TraceJobOperationService completeJobInfOperationService, boolean traceMonitor) {
-        this.completeJobInfOperationService = completeJobInfOperationService;
+    public FailToRetryRunner(TraceJobOperationService traceJobOperationService, boolean traceMonitor) {
+        this.traceJobOperationService = traceJobOperationService;
         this.traceMonitor = traceMonitor;
     }
 
@@ -66,7 +66,7 @@ public class FailToRetryRunner implements CommandLineRunner, ApplicationContextA
     }
 
     private void failToRetry() {
-        final List<JobInfo> unperformedJobInfoTask = completeJobInfOperationService.getUnperformedTask();
+        final List<JobInfo> unperformedJobInfoTask = traceJobOperationService.getUnperformedTask();
         if (ObjectsUtil.isNotEmpty(unperformedJobInfoTask)) {
             final int size = unperformedJobInfoTask.size();
             AtomicInteger successSize = new AtomicInteger(0);
@@ -123,7 +123,7 @@ public class FailToRetryRunner implements CommandLineRunner, ApplicationContextA
 
     private void storeErrorReason(JobInfo jobInfo, String errorReason) {
         jobInfo.setErrorReason(errorReason);
-        completeJobInfOperationService.update(jobInfo);
+        traceJobOperationService.update(jobInfo);
     }
 
     private Class<?> classForName(JobInfo jobInfo) {

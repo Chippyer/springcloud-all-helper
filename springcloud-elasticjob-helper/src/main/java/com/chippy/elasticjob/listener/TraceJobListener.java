@@ -56,8 +56,8 @@ public class TraceJobListener extends MonitorJobListener {
                 }
                 return;
             }
-            jobInfo.setStatus(JobStatusEnum.OVER.toString());
-            traceJobOperationService.update(jobInfo);
+            // jobInfo.setStatus(JobStatusEnum.OVER.toString());
+            traceJobOperationService.remove(jobInfo);
         }
     }
 

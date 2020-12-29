@@ -1,6 +1,7 @@
 package com.chippy.elasticjob.support.api;
 
 import com.chippy.core.common.constants.GlobalConstantEnum;
+import com.chippy.core.common.utils.CollectionsUtils;
 import com.chippy.elasticjob.support.domain.JobInfo;
 import com.chippy.elasticjob.support.enums.JobStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.redisson.api.condition.Conditions;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 任务信息服务接口REDIS实现
@@ -48,10 +50,14 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
         }
         final Condition eqOriginalCondition =
             Conditions.eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_ORIGINAL_NAME.getConstantValue(), originalJobName);
-        final Condition eqStatusCondition = Conditions
-            .eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_STATUS.getConstantValue(), jobStatusEnum.toString());
-        return (List<JobInfo>)liveObjectService
-            .find(JobInfo.class, Conditions.and(eqOriginalCondition, eqStatusCondition, this.getServerCondition()));
+        final List<JobInfo> jobInfos = (List<JobInfo>)liveObjectService
+            .find(JobInfo.class, Conditions.and(eqOriginalCondition, this.getServerCondition()));
+        if (CollectionsUtils.isEmpty(jobInfos)) {
+            return Collections.emptyList();
+        }
+        return jobInfos.stream().filter(e -> e.getStatus().equals(jobStatusEnum.toString()))
+            .collect(Collectors.toList());
+
     }
 
     @Override
@@ -96,10 +102,13 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
 
     @Override
     public List<JobInfo> getUnperformedTask() {
-        final Condition eqStatusCondition = Conditions
-            .eq(GlobalConstantEnum.ELASTIC_JOB_INFO_FILED_STATUS.getConstantValue(), JobStatusEnum.READY.toString());
-        return (List<JobInfo>)liveObjectService
-            .find(JobInfo.class, Conditions.and(eqStatusCondition, this.getServerCondition()));
+        final List<JobInfo> jobInfos =
+            (List<JobInfo>)liveObjectService.find(JobInfo.class, Conditions.and(this.getServerCondition()));
+        if (CollectionsUtils.isEmpty(jobInfos)) {
+            return Collections.emptyList();
+        }
+        return jobInfos.stream().filter(e -> e.getStatus().equals(JobStatusEnum.READY.toString()))
+            .collect(Collectors.toList());
     }
 
     private Condition getServerCondition() {
