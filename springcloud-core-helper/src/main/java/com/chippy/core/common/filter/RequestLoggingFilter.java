@@ -54,13 +54,18 @@ public class RequestLoggingFilter extends AbstractRequestLoggingFilter implement
         return ignoreUrls;
     }
 
+    public RequestLoggingFilter(boolean includeRequestBody, boolean includeQueryString, List<String> ignoreUrls) {
+        this(includeRequestBody, includeQueryString, false, false, false, ignoreUrls);
+    }
+
     public RequestLoggingFilter(boolean includeRequestBody, boolean includeQueryString, boolean includePayload,
-        boolean includeClient, boolean includeHeader) {
+        boolean includeClient, boolean includeHeader, List<String> ignoreUrls) {
         super.setIncludeQueryString(includeQueryString);
+        this.includeRequestBody = includeRequestBody;
+        this.ignoreUrls = ignoreUrls;
         super.setIncludePayload(includePayload);
         super.setIncludeClientInfo(includeClient);
         super.setIncludeHeaders(includeHeader);
-        this.includeRequestBody = includeRequestBody;
     }
 
     @Override
