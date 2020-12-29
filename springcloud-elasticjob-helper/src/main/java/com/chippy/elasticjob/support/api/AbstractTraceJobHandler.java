@@ -3,7 +3,6 @@ package com.chippy.elasticjob.support.api;
 import cn.hutool.core.lang.Assert;
 import com.chippy.core.common.utils.CollectionsUtils;
 import com.chippy.elasticjob.exception.DuplicateCreationException;
-import com.chippy.elasticjob.exception.JobInfoModifyException;
 import com.chippy.elasticjob.support.domain.JobInfo;
 import com.chippy.elasticjob.support.enums.JobStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -129,7 +128,8 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
 
         final List<JobInfo> jobInfos = traceJobOperationService.byOriginalJobName(originalJobName, JobStatusEnum.READY);
         if (CollectionsUtils.isEmpty(jobInfos)) {
-            throw new JobInfoModifyException("更新任务[" + originalJobName + "]不存在");
+            this.createJob(originalJobName, jobParameter, invokeDateTime);
+            return;
         }
         this.doUpdateJob(originalJobName, jobParameter, invokeDateTime, jobInfos.get(0));
     }
