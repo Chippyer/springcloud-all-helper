@@ -38,8 +38,8 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
     @Resource
     protected ZookeeperRegistryCenter registryCenter;
 
-    @Resource
-    protected ElasticJobListener elasticJobListener;
+    @Resource(name = "traceJobListener")
+    protected ElasticJobListener traceJobListener;
 
     @Resource
     protected JobConfigurationAPI jobConfigurationAPI;
@@ -91,7 +91,7 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
             JobConfiguration.newBuilder(jobInfo.getJobName(), jobInfo.getShardingTotalCount()).cron(jobInfo.getCron())
                 .jobParameter(jobInfo.getJobParameter()).failover(Boolean.TRUE)
                 .shardingItemParameters(jobInfo.getShardingParameter()).build();
-        new ScheduleJobBootstrap(registryCenter, this.getJob(), jobConfig, tracingConfiguration, elasticJobListener)
+        new ScheduleJobBootstrap(registryCenter, this.getJob(), jobConfig, tracingConfiguration, traceJobListener)
             .schedule();
     }
 
@@ -158,7 +158,7 @@ public abstract class AbstractTraceJobHandler implements TraceJobHandler {
                故此此处不进行任何修改操作，用删除插入两个动作进行弥补
              */
             this.doUpdateJob(originalJobName, jobParameter, invokeDateTime,
-                traceJobOperationService.byJobName(jobName));
+                traceJobOperationService.byJobName(jobName, JobStatusEnum.READY));
         } catch (Exception e) {
             String exceptionMessage = "更新的定时任务:[" + originalJobName + "]信息已不存在-[" + e.getMessage() + "]";
             log.error(exceptionMessage);

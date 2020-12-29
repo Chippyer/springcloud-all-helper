@@ -29,7 +29,8 @@ public class TraceJobListener extends MonitorJobListener {
     public void beforeJobExecuted(ShardingContexts shardingContexts) {
         super.beforeJobExecuted(shardingContexts);
         if (traceMonitor) {
-            final JobInfo jobInfo = traceJobOperationService.byJobName(shardingContexts.getJobName());
+            final JobInfo jobInfo =
+                traceJobOperationService.byJobName(shardingContexts.getJobName(), JobStatusEnum.READY);
             if (Objects.isNull(jobInfo)) {
                 if (log.isErrorEnabled()) {
                     log.error("通过任务名称查询状态为空, 此处不对任务信息进行记录");
@@ -47,7 +48,8 @@ public class TraceJobListener extends MonitorJobListener {
     public void afterJobExecuted(ShardingContexts shardingContexts) {
         super.afterJobExecuted(shardingContexts);
         if (traceMonitor) {
-            final JobInfo jobInfo = traceJobOperationService.byJobName(shardingContexts.getJobName());
+            final JobInfo jobInfo =
+                traceJobOperationService.byJobName(shardingContexts.getJobName(), JobStatusEnum.ING);
             if (Objects.isNull(jobInfo)) {
                 if (log.isErrorEnabled()) {
                     log.error("通过任务名称查询状态为空, 此处不对任务信息进行记录");

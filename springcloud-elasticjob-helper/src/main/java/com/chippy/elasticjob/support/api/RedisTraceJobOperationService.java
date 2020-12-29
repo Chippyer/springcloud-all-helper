@@ -61,12 +61,12 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
 
     @Override
     public JobInfo byJobName(String jobName, JobStatusEnum jobStatusEnum) {
-        if (Objects.isNull(jobStatusEnum)) {
-            return this.byJobName(jobName);
-        }
         final JobInfo jobInfo = this.byJobName(jobName);
         if (Objects.isNull(jobInfo)) {
             return null;
+        }
+        if (Objects.isNull(jobStatusEnum)) {
+            return jobInfo;
         }
         return jobInfo.getStatus().equals(jobStatusEnum.toString()) ? jobInfo : null;
     }
@@ -76,6 +76,7 @@ public class RedisTraceJobOperationService implements TraceJobOperationService {
         if (Objects.isNull(jobInfo)) {
             throw new IllegalArgumentException("传入的存储任务参数为空，无法进行任务信息存储");
         }
+        jobInfo.setServer(server);
         liveObjectService.merge(jobInfo);
     }
 
