@@ -22,12 +22,12 @@ public class ListFeignClient {
      */
     @SuppressWarnings("unchecked")
     public static <R> List<R> invoke(Class<R> dataClass, String method) {
-        final FeignClientDefinition.Element element = FeignClientOperator.getElement(method);
+        final FeignClientDefinition.Element element = FeignClientOperator.doGetElement(method);
         try {
-            Result<Object> response = FeignClientOperator.doProcess(element, null);
+            Result<Object> response = FeignClientOperator.process(element, null);
             return (List<R>)FeignClientOperator.doProcessResponse(element, response, dataClass, false);
         } catch (Exception e) {
-            FeignClientOperator.processException(element, e);
+            FeignClientOperator.doProcessException(element, e);
             return null;
         }
     }
@@ -45,12 +45,12 @@ public class ListFeignClient {
         if (null == params) {
             return invoke(dataClass, method);
         }
-        final FeignClientDefinition.Element element = FeignClientOperator.getElement(method);
+        final FeignClientDefinition.Element element = FeignClientOperator.doGetElement(method);
         try {
-            Result<Object> response = FeignClientOperator.doProcess(element, params);
+            Result<Object> response = FeignClientOperator.process(element, params);
             return (List<R>)FeignClientOperator.doProcessResponse(element, response, dataClass, false);
         } catch (Exception e) {
-            FeignClientOperator.processException(element, e);
+            FeignClientOperator.doProcessException(element, e);
             return null;
         }
     }
@@ -64,15 +64,15 @@ public class ListFeignClient {
      */
     @SuppressWarnings("unchecked")
     public static <R> List<R> invokeIfExThrow(Class<R> dataClass, String method) {
-        final FeignClientDefinition.Element element = FeignClientOperator.getElement(method);
+        final FeignClientDefinition.Element element = FeignClientOperator.doGetElement(method);
         try {
-            Result<Object> response = FeignClientOperator.doProcess(element, null);
+            Result<Object> response = FeignClientOperator.process(element, null);
             return (List<R>)FeignClientOperator.doProcessResponseIfExThrow(element, response, dataClass, false);
         } catch (FastClientInvokeException e) {
-            FeignClientOperator.processException(element, e);
+            FeignClientOperator.doProcessException(element, e);
             throw e;
         } catch (Exception e) {
-            FeignClientOperator.processException(element, e);
+            FeignClientOperator.doProcessException(element, e);
             throw new FastClientInvokeException(String.format("调用方法:[%s]未知异常", method));
         }
     }
@@ -90,15 +90,15 @@ public class ListFeignClient {
         if (null == params) {
             return invokeIfExThrow(dataClass, method);
         }
-        final FeignClientDefinition.Element element = FeignClientOperator.getElement(method);
+        final FeignClientDefinition.Element element = FeignClientOperator.doGetElement(method);
         try {
-            Result<Object> response = FeignClientOperator.doProcess(element, params);
+            Result<Object> response = FeignClientOperator.process(element, params);
             return (List<R>)FeignClientOperator.doProcessResponseIfExThrow(element, response, dataClass, false);
         } catch (FastClientInvokeException e) {
-            FeignClientOperator.processException(element, e);
+            FeignClientOperator.doProcessException(element, e);
             throw e;
         } catch (Exception e) {
-            FeignClientOperator.processException(element, e);
+            FeignClientOperator.doProcessException(element, e);
             throw new FastClientInvokeException(String.format("调用方法:[%s]未知异常", method));
         }
     }

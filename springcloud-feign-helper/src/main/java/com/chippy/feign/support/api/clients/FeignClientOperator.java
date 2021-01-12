@@ -30,22 +30,27 @@ public class FeignClientOperator {
      * @author chippy
      */
     @SuppressWarnings("unchecked")
-    static Result<Object> doProcess(FeignClientDefinition.Element element, Object[] params) {
+    static Result<Object> process(FeignClientDefinition.Element element, Object[] params) {
         final List<FeignClientProcessor> feignClientProcessorList =
             FeignClientProcessorRegistry.get(element.getFullPath() + element.getMethod());
         if (null == feignClientProcessorList || feignClientProcessorList.isEmpty()) {
-            return (Result<Object>)ReflectUtil
-                .invoke(CommonSpringContext.getBean(element.getFeignClientClass()), element.getMethod(), params);
+            return doInvoke(element, params);
         }
         final Object[] wrapParams =
             doInvokeProcessorBefore(element, params, feignClientProcessorList, feignClientProcessorList.size());
-        final Result<Object> response = ReflectUtil
-            .invoke(CommonSpringContext.getBean(element.getFeignClientClass()), element.getMethod(), wrapParams);
-        return (Result<Object>)doInvokeProcessAfter(element, response, feignClientProcessorList,
+        return (Result<Object>)doInvokeProcessAfter(element, doInvoke(element, wrapParams), feignClientProcessorList,
             feignClientProcessorList.size());
     }
 
-    static FeignClientDefinition.Element getElement(String business) {
+    @SuppressWarnings("unchecked")
+    private static Result<Object> doInvoke(FeignClientDefinition.Element element, Object[] params) {
+        return Objects.isNull(params) ? (Result<Object>)ReflectUtil
+            .invoke(CommonSpringContext.getBean(element.getFeignClientClass()), element.getMethod()) :
+            (Result<Object>)ReflectUtil
+                .invoke(CommonSpringContext.getBean(element.getFeignClientClass()), element.getMethod(), params);
+    }
+
+    static FeignClientDefinition.Element doGetElement(String business) {
         final FeignClientDefinition.Element element = FeignClientDefinition.get(business);
         if (element == null) {
             throw new FastClientInvokeException("此服务[" + FeignClientDefinition.server() + "]下不包含此业务类型");
@@ -134,7 +139,7 @@ public class FeignClientOperator {
      *
      * @author chippy
      */
-    static void processException(FeignClientDefinition.Element element, Exception e) {
+    static void doProcessException(FeignClientDefinition.Element element, Exception e) {
         final List<FeignClientProcessor> feignClientProcessorList =
             FeignClientProcessorRegistry.get(element.getFullPath() + element.getMethod());
         if (null != feignClientProcessorList && !feignClientProcessorList.isEmpty()) {
