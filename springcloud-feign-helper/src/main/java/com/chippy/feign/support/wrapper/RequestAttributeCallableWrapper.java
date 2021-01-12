@@ -1,4 +1,4 @@
-package com.chippy.feign.wrapper;
+package com.chippy.feign.support.wrapper;
 
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;

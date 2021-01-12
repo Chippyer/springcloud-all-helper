@@ -1,6 +1,6 @@
-package com.chippy.feign.strategy;
+package com.chippy.feign.support.strategy;
 
-import com.chippy.feign.wrapper.HystrixCallableWrapper;
+import com.chippy.feign.support.wrapper.HystrixCallableWrapper;
 import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
 
 import java.util.Collection;

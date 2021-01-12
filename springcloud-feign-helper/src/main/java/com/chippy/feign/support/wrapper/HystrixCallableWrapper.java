@@ -1,4 +1,4 @@
-package com.chippy.feign.wrapper;
+package com.chippy.feign.support.wrapper;
 
 import java.util.concurrent.Callable;
 
