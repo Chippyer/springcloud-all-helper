@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.chippy.redis.redisson.configuration.RedissonHelperAutoConfiguration
+com.ejoy.redis.redisson.configuration.RedissonHelperAutoConfiguration

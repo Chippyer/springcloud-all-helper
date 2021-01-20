@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.chippy.core.configuration.CommonAutoConfiguration
+com.ejoy.core.configuration.CommonAutoConfiguration

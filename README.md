@@ -16,8 +16,8 @@ ___
 package com.chippy.example.feign;
 
 import com.chippy.example.common.respnse.ResponseResult;
-import com.chippy.feign.support.api.clients.GenericFeignClient;
-import com.chippy.feign.support.api.clients.ListFeignClient;
+import GenericFeignClient;
+import ListFeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -77,12 +77,12 @@ public class FeignClientController {
 ```java
 package com.chippy.example.feign.processor;
 
-import com.chippy.core.common.response.Result;
-import com.chippy.core.common.utils.ObjectsUtil;
+import Result;
+import ObjectsUtil;
 import com.chippy.example.feign.OrderInfoResult;
 import com.chippy.example.feign.service.ServiceA;
-import com.chippy.feign.support.api.processor.FeignClientProcessor;
-import com.chippy.feign.support.definition.FeignClientDefinition;
+import FeignClientProcessor;
+import FeignClientDefinition;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -152,7 +152,7 @@ public class CustomerProcessor implements FeignClientProcessor {
 ```java
 package com.chippy.example.redisson.task;
 
-import com.chippy.redis.redisson.task.support.DistributedScheduled;
+import DistributedScheduled;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -199,8 +199,8 @@ spring:
 ```java
 package com.chippy.example;
 
-import com.chippy.elasticjob.annotation.EnableElasticJob;
-import com.chippy.feign.annotation.EnableFeignClientHelper;
+import EnableElasticJob;
+import EnableFeignClientHelper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -242,7 +242,7 @@ elastic-job:
 ```java
 package com.chippy.example.elasticjob;
 
-import com.chippy.elasticjob.support.api.AbstractTraceJobHandler;
+import AbstractTraceJobHandler;
 import org.apache.shardingsphere.elasticjob.api.ElasticJob;
 import org.springframework.stereotype.Component;
 
@@ -273,7 +273,7 @@ public class MyHandler extends AbstractTraceJobHandler {
 ```java
 package com.chippy.example.elasticjob;
 
-import com.chippy.elasticjob.support.api.AbstractTraceJob;
+import AbstractTraceJob;
 import org.apache.shardingsphere.elasticjob.api.ShardingContext;
 import org.springframework.stereotype.Component;
 
@@ -298,7 +298,7 @@ public class MyJob extends AbstractTraceJob<String> {
 ```java
 package com.chippy.example.elasticjob;
 
-import com.chippy.elasticjob.support.api.TraceJobProcessor;
+import TraceJobProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
