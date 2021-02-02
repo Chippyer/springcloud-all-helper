@@ -10,9 +10,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.redisson.api.RLiveObjectService;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 /**
  * SpringScheduled任务执行器
@@ -21,12 +18,14 @@ import javax.annotation.Resource;
  * @datetime 2020-12-17 16:39
  */
 @Aspect
-@Component
 @Slf4j
 public class SpringScheduler {
 
-    @Resource
     private RLiveObjectService liveObjectService;
+
+    public SpringScheduler(RLiveObjectService liveObjectService) {
+        this.liveObjectService = liveObjectService;
+    }
 
     @Pointcut("@annotation(org.springframework.scheduling.annotation.Scheduled)")
     private void taskPointCut() {
