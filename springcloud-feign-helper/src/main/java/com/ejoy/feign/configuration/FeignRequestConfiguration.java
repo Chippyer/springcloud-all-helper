@@ -27,7 +27,7 @@ import java.util.List;
 public class FeignRequestConfiguration {
 
     @Bean
-    public HystrixCallableWrapper requestAttributeAwareCallableWrapper() {
+    public HystrixCallableWrapper requestAttributeCallableWrapper() {
         return new RequestAttributeCallableWrapper();
     }
 
