@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 /**
  * Redisson配置类
@@ -42,44 +43,44 @@ public class RedissonHelperAutoConfiguration {
     // ====================== 内置XXXTemplate ======================
     @Bean
     @ConditionalOnMissingBean
-    public BigDecimalRedisTemplate bigDecimalRedisTemplate() {
-        return new BigDecimalRedisTemplate();
+    public BigDecimalRedisTemplate bigDecimalRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new BigDecimalRedisTemplate(connectionFactory);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public BooleanRedisTemplate booleanRedisTemplate() {
-        return new BooleanRedisTemplate();
+    public BooleanRedisTemplate booleanRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new BooleanRedisTemplate(connectionFactory);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public DoubleRedisTemplate doubleRedisTemplate() {
-        return new DoubleRedisTemplate();
+    public DoubleRedisTemplate doubleRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new DoubleRedisTemplate(connectionFactory);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public FloatRedisTemplate floatRedisTemplate() {
-        return new FloatRedisTemplate();
+    public FloatRedisTemplate floatRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new FloatRedisTemplate(connectionFactory);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public IntegerRedisTemplate integerRedisTemplate() {
-        return new IntegerRedisTemplate();
+    public IntegerRedisTemplate integerRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new IntegerRedisTemplate(connectionFactory);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public LongRedisTemplate longRedisTemplate() {
-        return new LongRedisTemplate();
+    public LongRedisTemplate longRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new LongRedisTemplate(connectionFactory);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public ShortRedisTemplate shortRedisTemplate() {
-        return new ShortRedisTemplate();
+    public ShortRedisTemplate shortRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new ShortRedisTemplate(connectionFactory);
     }
 
 }
