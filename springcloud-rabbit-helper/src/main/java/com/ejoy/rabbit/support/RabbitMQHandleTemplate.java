@@ -119,7 +119,6 @@ public abstract class RabbitMQHandleTemplate<T> implements InitializingBean {
     }
 
     private void doProcessExceptionStrategy(String content, Channel channel, Message message) throws IOException {
-        log.debug("rabbitMQOperationService-" + rabbitMQOperationService.getClass());
         rabbitMQOperationService
             .save(message.getMessageProperties().getCorrelationId(), content, business, exceptionStrategy, isAutoAck);
         switch (exceptionStrategy) {
