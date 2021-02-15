@@ -2,6 +2,7 @@ package com.ejoy.redis.redisson.task.support;
 
 import cn.hutool.json.JSONUtil;
 import com.ejoy.core.common.utils.IpUtil;
+import com.ejoy.core.common.utils.ObjectsUtil;
 import com.ejoy.redis.redisson.task.definition.ScheduledTaskDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -37,11 +38,13 @@ public class SpringScheduler {
         final String taskId = signature.getDeclaringTypeName() + "_" + signature.getName();
 
         final String assignServer = TaskUtils.getAssignServer();
-        if (!TaskUtils.isContain()) {
-            if (log.isTraceEnabled()) {
-                log.debug("当前服务IP[" + assignServer + "]无权限执行任务[" + taskId + "]");
+        if (ObjectsUtil.isNotEmpty(assignServer)) {
+            if (!TaskUtils.isContain()) {
+                if (log.isTraceEnabled()) {
+                    log.debug("当前服务IP[" + assignServer + "]无权限执行任务[" + taskId + "]");
+                }
+                return;
             }
-            return;
         }
 
         this.doProceed(joinPoint, taskId);
