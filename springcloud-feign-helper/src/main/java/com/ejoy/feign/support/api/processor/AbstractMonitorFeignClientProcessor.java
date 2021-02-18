@@ -32,6 +32,7 @@ public abstract class AbstractMonitorFeignClientProcessor implements FeignClient
             log.debug(
                 "当前请求-[" + element.getFullPath() + "]-[" + element.getMethod() + "]-耗时-" + (feignClientRequestEndTimeMs
                     - feignClientRequestStartTimeMs));
+            monitorThreadLocal.remove();
         }
         return response;
     }
