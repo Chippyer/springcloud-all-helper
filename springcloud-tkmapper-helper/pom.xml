@@ -9,17 +9,22 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>springcloud-feign-helper</artifactId>
+    <artifactId>springcloud-tkmapper-helper</artifactId>
+
+    <properties>
+        <tk.mapper.version>2.1.4</tk.mapper.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.ejoy</groupId>
-            <artifactId>springcloud-core-helper</artifactId>
+            <artifactId>springcloud-redis-helper</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper-spring-boot-starter</artifactId>
+            <version>${tk.mapper.version}</version>
         </dependency>
     </dependencies>
 

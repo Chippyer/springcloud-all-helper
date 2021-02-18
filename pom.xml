@@ -10,6 +10,7 @@
         <module>springcloud-redis-helper</module>
         <module>springcloud-elasticjob-helper</module>
         <module>springcloud-rabbit-helper</module>
+        <module>springcloud-tkmapper-helper</module>
     </modules>
 
     <properties>

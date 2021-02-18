@@ -20,11 +20,6 @@
     <dependencies>
         <dependency>
             <groupId>com.ejoy</groupId>
-            <artifactId>springcloud-core-helper</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ejoy</groupId>
             <artifactId>springcloud-redis-helper</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
