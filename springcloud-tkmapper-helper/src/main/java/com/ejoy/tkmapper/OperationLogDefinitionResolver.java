@@ -1,12 +1,13 @@
 package com.ejoy.tkmapper;
 
 import cn.hutool.core.lang.ClassScanner;
+import cn.hutool.core.util.ReflectUtil;
 import com.ejoy.core.common.utils.AnnotationUtils;
 import com.ejoy.core.common.utils.CollectionsUtils;
-import com.ejoy.core.common.utils.CommonSpringContext;
 import com.ejoy.core.common.utils.ObjectsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLiveObjectService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -60,13 +61,10 @@ public class OperationLogDefinitionResolver implements ApplicationContextAware, 
         for (String scannerPackage : scannerPackages) {
             final Set<Class<?>> scannerClasses = ClassScanner.scanPackage(scannerPackage);
             for (Class<?> scannerClass : scannerClasses) {
-                final Mapper mapper = CommonSpringContext.getApplicationContext().getBean(Mapper.class, scannerClass);
-                // todo 暂时不考虑这里是否能够获取到泛型类型
-                final Type monitorType =
-                    ((ParameterizedType)scannerClass.getGenericSuperclass()).getActualTypeArguments()[0];
-                final Class<? extends Type> monitorClass = monitorType.getClass();
+                final Mapper mapper = applicationContext.getBean(Mapper.class, scannerClass);
+                final Class<?> monitorClass = getInterfaceT(mapper, 0);
                 final Field[] monitorDeclaredFields = monitorClass.getDeclaredFields();
-                final MonitorFieldDefinition monitorFieldDefinition = new MonitorFieldDefinition(monitorClass, mapper);
+                final OperationLogInfo operationLogInfo = new OperationLogInfo(monitorClass, mapper);
                 for (Field monitorField : monitorDeclaredFields) {
                     final Monitor monitorAnnotation = AnnotationUtils.findAnnotation(monitorField, Monitor.class);
                     final Id idAnnotation = AnnotationUtils.findAnnotation(monitorField, Id.class);
@@ -75,14 +73,61 @@ public class OperationLogDefinitionResolver implements ApplicationContextAware, 
                     }
                     final String fieldName = monitorField.getName();
                     if (Objects.nonNull(monitorAnnotation)) {
-                        monitorFieldDefinition.setField(fieldName);
+                        operationLogInfo.setMonitorField(fieldName);
                     }
                     if (Objects.nonNull(idAnnotation)) {
-                        monitorFieldDefinition.setFieldPrimaryKey(fieldName);
+                        String id = monitorClass.getName() + fieldName;
+                        operationLogInfo.setMonitorPrimaryKeyField(fieldName);
+                        operationLogInfo.setId(id);
                     }
                 }
-                liveObjectService.merge(monitorFieldDefinition);
+                if (Objects.isNull(operationLogInfo.getMonitorField()) || Objects
+                    .isNull(operationLogInfo.getMonitorPrimaryKeyField())) {
+                    continue;
+                }
+                // 初始化监控数据集合
+                final List list = mapper.selectAll();
+                if (CollectionsUtils.isNotEmpty(list)) {
+                    for (Object o : list) {
+                        OperationLogInfo mergeOperationLogInfo = new OperationLogInfo();
+                        BeanUtils.copyProperties(operationLogInfo, mergeOperationLogInfo);
+                        final Object monitorFieldValue =
+                            ReflectUtil.getFieldValue(o, operationLogInfo.getMonitorField());
+                        final Object monitorPrimaryKeyFieldValue =
+                            ReflectUtil.getFieldValue(o, operationLogInfo.getMonitorPrimaryKeyField());
+                        mergeOperationLogInfo.setMonitorFieldValue(String.valueOf(monitorFieldValue));
+                        mergeOperationLogInfo
+                            .setMonitorPrimaryKeyFieldValue(String.valueOf(monitorPrimaryKeyFieldValue));
+                        MonitorClassDefinition.register(operationLogInfo.getMonitorFullPath(),
+                            operationLogInfo.getMonitorPrimaryKeyField());
+                        liveObjectService.merge(mergeOperationLogInfo);
+                    }
+                }
             }
+        }
+    }
+
+    /**
+     * 获取接口上的泛型T * * @param o 接口 * @param index 泛型索引
+     */
+    public static Class<?> getInterfaceT(Object o, int index) {
+        Type[] types = o.getClass().getGenericInterfaces();
+        ParameterizedType parameterizedType = (ParameterizedType)types[index];
+        Type type = parameterizedType.getActualTypeArguments()[index];
+        return checkType(type, index);
+    }
+
+    private static Class<?> checkType(Type type, int index) {
+        if (type instanceof Class<?>) {
+            return (Class<?>)type;
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType)type;
+            Type t = pt.getActualTypeArguments()[index];
+            return checkType(t, index);
+        } else {
+            String className = type == null ? "null" : type.getClass().getName();
+            throw new IllegalArgumentException(
+                "Expected a Class, ParameterizedType" + ", but <" + type + "> is of type " + className);
         }
     }
 

@@ -3,6 +3,7 @@ package com.ejoy.tkmapper;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.redisson.api.annotation.REntity;
+import org.redisson.api.annotation.RId;
 import org.redisson.api.annotation.RIndex;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -10,15 +11,19 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 监控实例信息定义
+ * 操作日志信息
  *
  * @author: chippy
- * @datetime 2021-02-18 18:03
+ * @datetime 2021-02-19 14:30
  */
-@REntity
 @Data
 @NoArgsConstructor
-public class MonitorFieldDefinition implements Serializable {
+@REntity
+public class OperationLogInfo implements Serializable {
+
+    @RId
+    @NotNull
+    private String id;
 
     /**
      * 实体类型全路径
@@ -30,6 +35,7 @@ public class MonitorFieldDefinition implements Serializable {
     /**
      * 监控对象Class信息
      */
+    @NotNull
     private Class monitorClass;
 
     /**
@@ -38,29 +44,21 @@ public class MonitorFieldDefinition implements Serializable {
     @NotNull
     private Mapper mapper;
 
-    /**
-     * 监控列名称
-     */
-    @NotNull
-    private String field;
+    private String monitorPrimaryKeyField;
 
-    /**
-     * 监控列值(初始为null)
-     */
-    private String fieldValue;
+    @RIndex
+    private String monitorPrimaryKeyFieldValue;
 
-    /**
-     * 监控对象主键列名称
-     */
-    @NotNull
-    private String fieldPrimaryKey;
+    private String monitorField;
 
-    /**
-     * 监控对象主键列值(初始为null)
-     */
-    private String fieldPrimaryKeyValue;
+    @RIndex
+    private String monitorFieldValue;
 
-    public MonitorFieldDefinition(Class monitorClass, Mapper mapper) {
+    private String desc;
+
+    private String updateDateTime;
+
+    public OperationLogInfo(@NotNull Class monitorClass, @NotNull Mapper mapper) {
         this.monitorClass = monitorClass;
         this.monitorFullPath = monitorClass.getName();
         this.mapper = mapper;

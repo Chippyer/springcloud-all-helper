@@ -21,11 +21,11 @@ public class MonitorClassDefinition implements Serializable {
      */
     private static Map<String, String> cache = new HashMap<>(256);
 
-    public static void register(String invokeMethodId, String monitorClassFullPath) {
-        if (Objects.isNull(invokeMethodId) || Objects.isNull(monitorClassFullPath)) {
+    public static void register(String classFullPath, String primaryKeyField) {
+        if (Objects.isNull(classFullPath) || Objects.isNull(primaryKeyField)) {
             return;
         }
-        cache.put(invokeMethodId, monitorClassFullPath);
+        cache.put(classFullPath, primaryKeyField);
     }
 
     public static String get(String invokeMethodId) {
