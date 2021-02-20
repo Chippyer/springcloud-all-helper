@@ -7,6 +7,9 @@ package com.ejoy.core.common.constants;
  */
 public enum GlobalConstantEnum {
 
+    COLON(":", "冒号"),
+    SPLIT_("_", "分隔符_"),
+    SPRING_APPLICATION_NAME("spring.application.name", "客户端应用名称"),
     MONITOR_PACKAGE("monitor.packages", "监控扫描包，多个以“,”号分割"),
     SPRING_SCHEDULED_ASSIGN_SERVER("spring.scheduled.assign-server", "SpringScheduled指定的执行服务"),
     ELASTIC_JOB_REGCENTER_SERVER_LIST("elastic-job.reg-center.server-list", "ZK服务链接地址IP"),

@@ -1,4 +1,6 @@
-package com.ejoy.tkmapper;
+package com.ejoy.tkmapper.annotation;
+
+import tk.mybatis.mapper.common.Mapper;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 类型监控注解
+ * 监控数据收集执行器
  *
  * @author: chippy
  * @datetime: 2021-02-20 11:00
@@ -21,6 +23,6 @@ public @interface MonitorExecutor {
      * @return java.lang.Class
      * @author chippy
      */
-    Class executor();
+    Class<? extends Mapper> value();
 
 }

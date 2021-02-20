@@ -1,8 +1,9 @@
-package com.ejoy.tkmapper;
+package com.ejoy.tkmapper.configuration;
 
+import com.ejoy.tkmapper.support.api.MonitorService;
+import com.ejoy.tkmapper.support.definition.MonitorDefinitionResolver;
 import org.redisson.spring.starter.RedissonAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,19 +14,13 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 public class MonitorFieldAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean
-    public RedisMonitorService monitorService() {
-        return new RedisMonitorService();
+    public MonitorService monitorService(StringRedisTemplate stringRedisTemplate) {
+        return new MonitorService(stringRedisTemplate);
     }
 
     @Bean
-    public OperationLogDefinitionResolver operationLogDefinitionResolver() {
-        return new OperationLogDefinitionResolver();
-    }
-
-    @Bean
-    public MonitorDataExecutorListener monitorDataExecutorListener(StringRedisTemplate stringRedisTemplate) {
-        return new MonitorDataExecutorListener(stringRedisTemplate);
+    public MonitorDefinitionResolver monitorDefinitionResolver() {
+        return new MonitorDefinitionResolver();
     }
 
 }
