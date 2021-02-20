@@ -7,6 +7,7 @@ package com.ejoy.core.common.constants;
  */
 public enum GlobalConstantEnum {
 
+    MONITOR_PACKAGE("monitor.packages", "监控扫描包，多个以“,”号分割"),
     SPRING_SCHEDULED_ASSIGN_SERVER("spring.scheduled.assign-server", "SpringScheduled指定的执行服务"),
     ELASTIC_JOB_REGCENTER_SERVER_LIST("elastic-job.reg-center.server-list", "ZK服务链接地址IP"),
     ELASTIC_JOB_REGCENTER_NAMESPACE("elastic-job.reg-center.namespace", "ZK名命空间"),

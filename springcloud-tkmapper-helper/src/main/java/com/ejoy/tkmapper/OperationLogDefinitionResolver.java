@@ -1,23 +1,22 @@
 package com.ejoy.tkmapper;
 
 import cn.hutool.core.lang.ClassScanner;
-import cn.hutool.core.util.ReflectUtil;
+import com.ejoy.core.common.constants.GlobalConstantEnum;
 import com.ejoy.core.common.utils.AnnotationUtils;
-import com.ejoy.core.common.utils.CollectionsUtils;
 import com.ejoy.core.common.utils.ObjectsUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLiveObjectService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import tk.mybatis.mapper.common.Mapper;
-import tk.mybatis.spring.annotation.MapperScan;
 
 import javax.persistence.Id;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * 记录操作日志信息解析器
@@ -29,12 +28,6 @@ import java.util.*;
 public class OperationLogDefinitionResolver implements ApplicationContextAware, InitializingBean {
 
     private ApplicationContext applicationContext;
-    private List<String> scannerPackages = new ArrayList<>();
-    private RLiveObjectService liveObjectService;
-
-    public OperationLogDefinitionResolver(RLiveObjectService liveObjectService) {
-        this.liveObjectService = liveObjectService;
-    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -42,28 +35,19 @@ public class OperationLogDefinitionResolver implements ApplicationContextAware, 
     }
 
     public void init() {
-        // 获取MapperScan注解
-        final Map<String, Object> beansWithAnnotations = applicationContext.getBeansWithAnnotation(MapperScan.class);
-        if (CollectionsUtils.isEmpty(beansWithAnnotations)) {
-            throw new ResolverOperationLogDefinitionException("请指定监控扫描数据的实体所在报名");
-        }
-        beansWithAnnotations.forEach((k, v) -> {
-            final MapperScan mapperScan = AnnotationUtils.findAnnotation(v.getClass(), MapperScan.class);
-            final String[] annotationScannerPackages = mapperScan.value();
-            if (ObjectsUtil.isNotEmpty(annotationScannerPackages)) {
-                scannerPackages.addAll(Arrays.asList(annotationScannerPackages));
-            }
-        });
-
+        final List<String> scannerPackages = this.doInitScannerPackages();
         // 扫描出基本信息
         for (String scannerPackage : scannerPackages) {
             final Set<Class<?>> scannerClasses = ClassScanner.scanPackage(scannerPackage);
-            for (Class<?> scannerClass : scannerClasses) {
-                final Mapper mapper = applicationContext.getBean(Mapper.class, scannerClass);
-                A a = (A)mapper;
-                final Class monitorClass = a.getC();
+            for (Class<?> monitorClass : scannerClasses) {
+                final MonitorExecutor monitorDataExecutor =
+                    AnnotationUtils.findAnnotation(monitorClass, MonitorExecutor.class);
+                if (Objects.isNull(monitorDataExecutor)) {
+                    continue;
+                }
+                final Mapper mapper = applicationContext.getBean(Mapper.class, monitorDataExecutor.executor());
                 final Field[] monitorDeclaredFields = monitorClass.getDeclaredFields();
-                final OperationLogInfo operationLogInfo = new OperationLogInfo(monitorClass, mapper);
+                final MonitorDefinition monitorDefinition = new MonitorDefinition(monitorClass, mapper);
                 for (Field monitorField : monitorDeclaredFields) {
                     final Monitor monitorAnnotation = AnnotationUtils.findAnnotation(monitorField, Monitor.class);
                     final Id idAnnotation = AnnotationUtils.findAnnotation(monitorField, Id.class);
@@ -72,38 +56,67 @@ public class OperationLogDefinitionResolver implements ApplicationContextAware, 
                     }
                     final String fieldName = monitorField.getName();
                     if (Objects.nonNull(monitorAnnotation)) {
-                        operationLogInfo.setMonitorField(fieldName);
+                        monitorDefinition.setMonitorField(fieldName);
                     }
                     if (Objects.nonNull(idAnnotation)) {
-                        operationLogInfo.setMonitorPrimaryKeyField(fieldName);
+                        monitorDefinition.setPrimaryKeyField(fieldName);
                     }
                 }
-                if (Objects.isNull(operationLogInfo.getMonitorField()) || Objects
-                    .isNull(operationLogInfo.getMonitorPrimaryKeyField())) {
-                    continue;
-                }
+                MonitorClassDefinition.register(monitorDefinition);
+                // if (Objects.isNull(monitorDefinition.getField()) || Objects
+                //     .isNull(monitorDefinition.getPrimaryKeyField())) {
+                //     continue;
+                // }
                 // 初始化监控数据集合
-                final List list = mapper.selectAll();
-                if (CollectionsUtils.isNotEmpty(list)) {
-                    for (Object o : list) {
-                        OperationLogInfo mergeOperationLogInfo = new OperationLogInfo();
-                        BeanUtils.copyProperties(operationLogInfo, mergeOperationLogInfo);
-                        final Object monitorFieldValue =
-                            ReflectUtil.getFieldValue(o, operationLogInfo.getMonitorField());
-                        final Object monitorPrimaryKeyFieldValue =
-                            ReflectUtil.getFieldValue(o, operationLogInfo.getMonitorPrimaryKeyField());
-                        mergeOperationLogInfo.setMonitorFieldValue(String.valueOf(monitorFieldValue));
-                        mergeOperationLogInfo
-                            .setMonitorPrimaryKeyFieldValue(String.valueOf(monitorPrimaryKeyFieldValue));
-                        mergeOperationLogInfo
-                            .setId(mergeOperationLogInfo.getMonitorFullPath() + monitorPrimaryKeyFieldValue);
-                        MonitorClassDefinition.register(mergeOperationLogInfo.getMonitorFullPath(),
-                            mergeOperationLogInfo.getMonitorPrimaryKeyField());
-                        liveObjectService.merge(mergeOperationLogInfo);
-                    }
-                }
+                // final List list = mapper.selectAll();
+                // if (CollectionsUtils.isNotEmpty(list)) {
+                //     for (Object o : list) {
+                //         final Object monitorFieldValue = ReflectUtil.getFieldValue(o, monitorDefinition.getField());
+                //         final Object monitorPrimaryKeyFieldValue =
+                //             ReflectUtil.getFieldValue(o, monitorDefinition.getPrimaryKeyField());
+                //         String operationLogInfoId =
+                //             monitorDefinition.getMonitorFullPath() + "_" + monitorPrimaryKeyFieldValue;
+                //         final MonitorDefinition existsOperationLogInfo =
+                //             liveObjectService.get(MonitorDefinition.class, operationLogInfoId);
+                //         if (Objects.nonNull(existsOperationLogInfo)) {
+                //             this.doUpdate(existsOperationLogInfo, monitorFieldValue);
+                //         } else {
+                //             this.doInsert(monitorDefinition, operationLogInfoId, monitorFieldValue,
+                //                 monitorPrimaryKeyFieldValue);
+                //         }
+                //     }
+                // }
             }
         }
+    }
+
+    // private void doUpdate(MonitorDefinition existsOperationLogInfo, Object monitorFieldValue) {
+    //     if (!existsOperationLogInfo.getFieldValue().equals(monitorFieldValue)) {
+    //         existsOperationLogInfo.setFieldValue(String.valueOf(monitorFieldValue));
+    //     }
+    // }
+    //
+    // private void doInsert(MonitorDefinition operationLogInfo, String id, Object monitorFieldValue,
+    //     Object monitorPrimaryKeyFieldValue) {
+    //     MonitorDefinition mergeOperationLogInfo = new MonitorDefinition();
+    //     BeanUtils.copyProperties(operationLogInfo, mergeOperationLogInfo);
+    //     mergeOperationLogInfo.setId(id);
+    //     mergeOperationLogInfo.setFieldValue(String.valueOf(monitorFieldValue));
+    //     mergeOperationLogInfo.setPrimaryKeyFieldValue(String.valueOf(monitorPrimaryKeyFieldValue));
+    //     mergeOperationLogInfo.setCreateDateTime(new DateTime().toStringDefaultTimeZone());
+    //     mergeOperationLogInfo.setDesc("初始化监控数据信息");
+    //     MonitorClassDefinition
+    //         .register(mergeOperationLogInfo.getMonitorFullPath(), mergeOperationLogInfo.getPrimaryKeyField());
+    //     liveObjectService.merge(mergeOperationLogInfo);
+    // }
+
+    private List<String> doInitScannerPackages() {
+        final String monitorScannerPackages =
+            applicationContext.getEnvironment().getProperty(GlobalConstantEnum.MONITOR_PACKAGE.getConstantValue());
+        if (ObjectsUtil.isEmpty(monitorScannerPackages)) {
+            throw new ResolverOperationLogDefinitionException("请指定监控扫描数据的实体所在包名，多个以','号分割");
+        }
+        return Arrays.asList(monitorScannerPackages.split(","));
     }
 
     @Override

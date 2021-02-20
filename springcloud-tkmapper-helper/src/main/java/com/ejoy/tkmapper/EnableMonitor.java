@@ -15,6 +15,5 @@ import java.lang.annotation.*;
 @Import(MonitorFieldAutoConfiguration.class)
 @Documented
 @Inherited
-public @interface EnableMonitorField {
-
+public @interface EnableMonitor {
 }

@@ -2,9 +2,6 @@ package com.ejoy.tkmapper;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.redisson.api.annotation.REntity;
-import org.redisson.api.annotation.RId;
-import org.redisson.api.annotation.RIndex;
 import tk.mybatis.mapper.common.Mapper;
 
 import javax.validation.constraints.NotNull;
@@ -18,19 +15,13 @@ import java.io.Serializable;
  */
 @Data
 @NoArgsConstructor
-@REntity
-public class OperationLogInfo implements Serializable {
-
-    @RId
-    @NotNull
-    private String id;
+public class MonitorDefinition implements Serializable {
 
     /**
      * 实体类型全路径
      */
-    @RIndex
     @NotNull
-    private String monitorFullPath;
+    private String monitorClassFullPath;
 
     /**
      * 监控对象Class信息
@@ -44,23 +35,19 @@ public class OperationLogInfo implements Serializable {
     @NotNull
     private Mapper mapper;
 
-    private String monitorPrimaryKeyField;
+    /**
+     * 监控类主键字段名称
+     */
+    private String primaryKeyField;
 
-    @RIndex
-    private String monitorPrimaryKeyFieldValue;
-
+    /**
+     * 监控字段名称
+     */
     private String monitorField;
 
-    @RIndex
-    private String monitorFieldValue;
-
-    private String desc;
-
-    private String updateDateTime;
-
-    public OperationLogInfo(@NotNull Class monitorClass, @NotNull Mapper mapper) {
+    public MonitorDefinition(@NotNull Class monitorClass, @NotNull Mapper mapper) {
         this.monitorClass = monitorClass;
-        this.monitorFullPath = monitorClass.getName();
+        this.monitorClassFullPath = monitorClass.getName();
         this.mapper = mapper;
     }
 }
