@@ -25,4 +25,13 @@ public @interface Monitor {
      */
     boolean value() default false;
 
+    /**
+     * 操作记录失效时间
+     * 默认为0走公共配置时间
+     *
+     * @return long
+     * @author chippy
+     */
+    long expire() default 0;
+
 }

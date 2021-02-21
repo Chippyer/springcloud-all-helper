@@ -1,6 +1,8 @@
 package com.ejoy.tkmapper.configuration;
 
+import com.ejoy.tkmapper.support.api.IMonitorService;
 import com.ejoy.tkmapper.support.api.MonitorService;
+import com.ejoy.tkmapper.support.aspect.AutoMonitorExecutor;
 import com.ejoy.tkmapper.support.definition.MonitorDefinitionResolver;
 import org.redisson.spring.starter.RedissonAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -21,6 +23,11 @@ public class MonitorFieldAutoConfiguration {
     @Bean
     public MonitorDefinitionResolver monitorDefinitionResolver() {
         return new MonitorDefinitionResolver();
+    }
+
+    @Bean
+    public AutoMonitorExecutor autoMonitorExecutor(IMonitorService monitorService) {
+        return new AutoMonitorExecutor(monitorService);
     }
 
 }

@@ -86,6 +86,11 @@ public class MonitorClassDefinition {
          */
         private Boolean isCustomerProcess;
 
+        /**
+         * 监控记录操作信息失效时间
+         */
+        private long expireTime;
+
         public Element(Class monitorClass, Mapper mapper) {
             this.monitorClass = monitorClass;
             this.monitorClassFullPath = monitorClass.getName();
@@ -116,6 +121,10 @@ public class MonitorClassDefinition {
             return isCustomerProcess;
         }
 
+        public long getExpireTime() {
+            return expireTime;
+        }
+
         public void setPrimaryKeyField(String primaryKeyField) {
             this.primaryKeyField = primaryKeyField;
         }
@@ -126,6 +135,10 @@ public class MonitorClassDefinition {
 
         public void setCustomerProcess(Boolean customerProcess) {
             isCustomerProcess = customerProcess;
+        }
+
+        public void setExpireTime(long expireTime) {
+            this.expireTime = expireTime;
         }
     }
 

@@ -86,6 +86,7 @@ public class MonitorDefinitionResolver implements ApplicationContextAware, Initi
             if (Objects.nonNull(monitorAnnotation)) {
                 element.setMonitorField(fieldName);
                 element.setCustomerProcess(monitorAnnotation.value());
+                element.setExpireTime(monitorAnnotation.expire());
             }
             if (Objects.nonNull(idAnnotation)) {
                 element.setPrimaryKeyField(fieldName);

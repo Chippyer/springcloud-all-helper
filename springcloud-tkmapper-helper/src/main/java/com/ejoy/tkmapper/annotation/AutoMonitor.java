@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @author: chippy
  * @datetime 2021/2/20 23:13
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AutoMonitor {
 }

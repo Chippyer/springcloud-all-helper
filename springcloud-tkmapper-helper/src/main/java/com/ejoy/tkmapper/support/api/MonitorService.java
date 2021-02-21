@@ -9,6 +9,10 @@ import com.ejoy.tkmapper.support.definition.MonitorClassDefinition;
 import com.ejoy.tkmapper.support.domain.MonitorOperationLogInfo;
 import com.ejoy.tkmapper.support.event.MonitorEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,6 +21,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,17 +33,25 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @SuppressWarnings("all")
-public class MonitorService implements IMonitorService, ApplicationEventPublisherAware {
+public class MonitorService
+    implements IMonitorService, ApplicationContextAware, ApplicationEventPublisherAware, InitializingBean {
 
     private static final int DEFAULT_START_INDEX = 0;
     private static final int ONE = 1;
     private static final int DEFAULT_END_INDEX = 10;
 
+    private long commonExpireTime = 604800000;
     private StringRedisTemplate stringRedisTemplate;
+    private ApplicationContext applicationContext;
     private ApplicationEventPublisher applicationEventPublisher;
 
     public MonitorService(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -67,27 +80,24 @@ public class MonitorService implements IMonitorService, ApplicationEventPublishe
             }
             return;
         }
-        final String monitorField = element.getMonitorField(), primaryKeyField = element.getPrimaryKeyField();
-        final Boolean isCustomerProcess = element.getCustomerProcess();
-        final Object monitorFieldValue = ReflectUtil.getFieldValue(object, monitorField);
-        final String primaryKeyFieldValue = String.valueOf(ReflectUtil.getFieldValue(object, primaryKeyField));
+        final String monitorFieldValue = String.valueOf(ReflectUtil.getFieldValue(object, element.getMonitorField()));
+        final String primaryKeyFieldValue =
+            String.valueOf(ReflectUtil.getFieldValue(object, element.getPrimaryKeyField()));
         if (Objects.isNull(primaryKeyFieldValue)) {
             if (log.isTraceEnabled()) {
                 log.trace("传入对象主键值为空");
             }
             return;
         }
-        final String key = this.doGetKey(classFullPath, primaryKeyFieldValue);
-        final List<String> lastMonitorOperationLogInfoJsonList = stringRedisTemplate.opsForList().range(key, 0, 1);
+        final List<String> lastMonitorOperationLogInfoJsonList = stringRedisTemplate.opsForList()
+            .range(this.doGetKey(element.getMonitorClassFullPath(), primaryKeyFieldValue), 0, 1);
         if (CollectionUtils.isEmpty(lastMonitorOperationLogInfoJsonList)) {
-            this.doProcess(isCustomerProcess, monitorField, primaryKeyField, monitorFieldValue, primaryKeyFieldValue,
-                key, customerDesc);
+            this.doProcess(element, monitorFieldValue, primaryKeyFieldValue, customerDesc);
             return;
         }
         final String lastMonitorOperationLogInfoJson = lastMonitorOperationLogInfoJsonList.get(0);
         if (Objects.isNull(lastMonitorOperationLogInfoJson)) {
-            this.doProcess(isCustomerProcess, monitorField, primaryKeyField, monitorFieldValue, primaryKeyFieldValue,
-                key, customerDesc);
+            this.doProcess(element, monitorFieldValue, primaryKeyFieldValue, customerDesc);
             return;
         }
         final MonitorOperationLogInfo lastMonitorOperationLogInfo =
@@ -100,12 +110,7 @@ public class MonitorService implements IMonitorService, ApplicationEventPublishe
             }
             return;
         }
-        this.doProcess(isCustomerProcess, monitorField, primaryKeyField, monitorFieldValue, primaryKeyFieldValue, key,
-            customerDesc);
-    }
-
-    private String doGetDesc(Object monitorFieldValue, String primaryKeyFieldValue) {
-        return "业务数据唯一标识[" + primaryKeyFieldValue + "], 更新后[" + monitorFieldValue + "]";
+        this.doProcess(element, monitorFieldValue, primaryKeyFieldValue, customerDesc);
     }
 
     @Override
@@ -149,18 +154,17 @@ public class MonitorService implements IMonitorService, ApplicationEventPublishe
             .collect(Collectors.toList());
     }
 
-    private void doProcess(boolean isCustomerProcess, String monitorField, String primaryKeyField,
-        Object monitorFieldValue, String primaryKeyFieldValue, String key, String desc) {
-        String finalDesc = Objects.isNull(desc) ? this.doGetDesc(monitorFieldValue, primaryKeyFieldValue) : desc;
-        this.doInsert(key, monitorField, primaryKeyField, monitorFieldValue, primaryKeyFieldValue, finalDesc);
-        if (isCustomerProcess) {
+    private void doProcess(MonitorClassDefinition.Element element, String monitorFieldValue,
+        String primaryKeyFieldValue, String desc) {
+        final String finalDesc = Objects.isNull(desc) ? this.doGetDesc(monitorFieldValue, primaryKeyFieldValue) : desc;
+        this.doInsert(element, monitorFieldValue, primaryKeyFieldValue, finalDesc);
+        if (element.getCustomerProcess()) {
             // 自定义操作 -> 发送监控事件
             if (log.isTraceEnabled()) {
                 log.trace("自定义处理字段操作记录");
             }
             applicationEventPublisher.publishEvent(new MonitorEvent(
-                this.doBuildMonitorOpreationLogInfo(monitorField, primaryKeyField, monitorFieldValue,
-                    primaryKeyFieldValue, finalDesc)));
+                this.doBuildMonitorOpreationLogInfo(element, monitorFieldValue, primaryKeyFieldValue, finalDesc)));
         }
     }
 
@@ -168,8 +172,12 @@ public class MonitorService implements IMonitorService, ApplicationEventPublishe
         return classFullPath + GlobalConstantEnum.COLON.getConstantValue() + id;
     }
 
-    private void doInsert(String key, String monitorField, String primaryKeyField, Object monitorFieldValue,
-        Object primaryKeyFieldValue, String desc) {
+    private String doGetDesc(Object monitorFieldValue, String primaryKeyFieldValue) {
+        return "业务数据唯一标识[" + primaryKeyFieldValue + "], 更新后[" + monitorFieldValue + "]";
+    }
+
+    private void doInsert(String key, String monitorField, String primaryKeyField, String monitorFieldValue,
+        String primaryKeyFieldValue, String desc) {
         MonitorOperationLogInfo monitorOperationLogInfo = new MonitorOperationLogInfo();
         monitorOperationLogInfo.setMonitorField(monitorField);
         monitorOperationLogInfo.setMonitorFieldValue(String.valueOf(monitorFieldValue));
@@ -182,16 +190,46 @@ public class MonitorService implements IMonitorService, ApplicationEventPublishe
                 desc)));
     }
 
-    private MonitorOperationLogInfo doBuildMonitorOpreationLogInfo(String monitorField, String primaryKeyField,
-        Object monitorFieldValue, Object primaryKeyFieldValue, String desc) {
+    private void doInsert(MonitorClassDefinition.Element element, String monitorFieldValue, String primaryKeyFieldValue,
+        String desc) {
+        final String key = this.doGetKey(element.getMonitorClassFullPath(), primaryKeyFieldValue);
+        final String monitorField = element.getMonitorField(), primaryKeyField = element.getPrimaryKeyField();
+        final long expireTime = element.getExpireTime() == 0 ? commonExpireTime : element.getExpireTime();
         MonitorOperationLogInfo monitorOperationLogInfo = new MonitorOperationLogInfo();
         monitorOperationLogInfo.setMonitorField(monitorField);
-        monitorOperationLogInfo.setMonitorFieldValue(String.valueOf(monitorFieldValue));
+        monitorOperationLogInfo.setMonitorFieldValue(monitorFieldValue);
         monitorOperationLogInfo.setPrimaryKeyField(primaryKeyField);
-        monitorOperationLogInfo.setPrimaryKeyFieldValue(String.valueOf(primaryKeyFieldValue));
+        monitorOperationLogInfo.setPrimaryKeyFieldValue(primaryKeyFieldValue);
+        monitorOperationLogInfo.setCreateDateTime(new DateTime());
+        monitorOperationLogInfo.setDesc(desc);
+        stringRedisTemplate.opsForList().leftPush(key, JSONUtil.toJsonStr(
+            this.doBuildMonitorOpreationLogInfo(monitorField, primaryKeyField, monitorFieldValue, primaryKeyFieldValue,
+                desc)));
+        stringRedisTemplate.expire(key, expireTime, TimeUnit.MILLISECONDS);
+    }
+
+    private MonitorOperationLogInfo doBuildMonitorOpreationLogInfo(MonitorClassDefinition.Element element,
+        String monitorFieldValue, String primaryKeyFieldValue, String desc) {
+        return this
+            .doBuildMonitorOpreationLogInfo(element.getMonitorField(), element.getPrimaryKeyField(), monitorFieldValue,
+                primaryKeyFieldValue, desc);
+    }
+
+    private MonitorOperationLogInfo doBuildMonitorOpreationLogInfo(String monitorField, String primaryKeyField,
+        String monitorFieldValue, String primaryKeyFieldValue, String desc) {
+        MonitorOperationLogInfo monitorOperationLogInfo = new MonitorOperationLogInfo();
+        monitorOperationLogInfo.setMonitorField(monitorField);
+        monitorOperationLogInfo.setMonitorFieldValue(monitorFieldValue);
+        monitorOperationLogInfo.setPrimaryKeyField(primaryKeyField);
+        monitorOperationLogInfo.setPrimaryKeyFieldValue(primaryKeyFieldValue);
         monitorOperationLogInfo.setCreateDateTime(new DateTime());
         monitorOperationLogInfo.setDesc(desc);
         return monitorOperationLogInfo;
     }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.commonExpireTime = Long.parseLong(Objects.requireNonNull(this.applicationContext.getEnvironment()
+            .getProperty(GlobalConstantEnum.MONITOR_COMMON_EXPIRE.getConstantValue())));
+    }
 }
