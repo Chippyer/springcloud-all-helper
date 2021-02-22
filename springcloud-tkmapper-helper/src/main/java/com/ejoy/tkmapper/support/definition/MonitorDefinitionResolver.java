@@ -28,14 +28,14 @@ import java.util.*;
 public class MonitorDefinitionResolver implements ApplicationContextAware, InitializingBean {
 
     private ApplicationContext applicationContext;
-    List<String> scannerPackages = new ArrayList<>();
+    private List<String> scannerPackages = new ArrayList<>();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    public void init() {
+    private void init() {
         this.doInitServer();
         this.doInitScannerPackages();
         this.doInitMonitorInfo();
@@ -46,18 +46,60 @@ public class MonitorDefinitionResolver implements ApplicationContextAware, Initi
         for (String scannerPackage : scannerPackages) {
             final Set<Class<?>> scannerClasses = ClassScanner.scanPackage(scannerPackage);
             for (Class<?> monitorClass : scannerClasses) {
-                final MonitorExecutor monitorDataExecutor =
+                final MonitorExecutor monitorExecutorAnnotation =
                     AnnotationUtils.findAnnotation(monitorClass, MonitorExecutor.class);
-                if (Objects.isNull(monitorDataExecutor)) {
+                if (Objects.isNull(monitorExecutorAnnotation)) {
                     continue;
                 }
-                final Mapper mapper = applicationContext.getBean(Mapper.class, monitorDataExecutor.value());
-                final Field[] monitorDeclaredFields = monitorClass.getDeclaredFields();
-                final MonitorClassDefinition.Element element = new MonitorClassDefinition.Element(monitorClass, mapper);
-                this.doResolveFields(monitorDeclaredFields, element);
+                final Mapper mapper = applicationContext.getBean(Mapper.class, monitorExecutorAnnotation.value());
+                final MonitorClassDefinition.Element element = this.doResolverFields(monitorClass, mapper);
+                if (Objects.isNull(element)) {
+                    continue;
+                }
                 monitorClassDefinition.register(element);
             }
         }
+    }
+
+    private MonitorClassDefinition.Element doResolverFields(Class<?> monitorClass, Mapper mapper) {
+        final Monitor classMonitorAnnotation = AnnotationUtils.findAnnotation(monitorClass, Monitor.class);
+        final Field[] monitorDeclaredFields = monitorClass.getDeclaredFields();
+        final MonitorClassDefinition.Element element = new MonitorClassDefinition.Element(monitorClass, mapper);
+        for (Field monitorField : monitorDeclaredFields) {
+            final Id idAnnotation = AnnotationUtils.findAnnotation(monitorField, Id.class);
+            if (Objects.isNull(idAnnotation)) {
+                return null;
+            }
+            element.setPrimaryKeyField(monitorField.getName());
+        }
+        return Objects.nonNull(classMonitorAnnotation) ?
+            this.doResolverForClass(monitorDeclaredFields, classMonitorAnnotation, element) :
+            this.doResolverForMethod(monitorDeclaredFields, element);
+    }
+
+    private MonitorClassDefinition.Element doResolverForClass(Field[] monitorDeclaredFields, Monitor monitorAnnotation,
+        MonitorClassDefinition.Element element) {
+        for (Field monitorField : monitorDeclaredFields) {
+            final String fieldName = monitorField.getName();
+            element.getMonitorFields().add(fieldName);
+            element.setCustomerProcess(monitorAnnotation.value());
+            element.setExpireTime(monitorAnnotation.expire());
+        }
+        return element;
+    }
+
+    private MonitorClassDefinition.Element doResolverForMethod(Field[] monitorDeclaredFields,
+        MonitorClassDefinition.Element element) {
+        for (Field monitorField : monitorDeclaredFields) {
+            final Monitor monitorAnnotation = AnnotationUtils.findAnnotation(monitorField, Monitor.class);
+            if (Objects.isNull(monitorAnnotation)) {
+                return null;
+            }
+            element.getMonitorFields().add(monitorField.getName());
+            element.setCustomerProcess(monitorAnnotation.value());
+            element.setExpireTime(monitorAnnotation.expire());
+        }
+        return element;
     }
 
     private void doInitServer() {
@@ -73,25 +115,6 @@ public class MonitorDefinitionResolver implements ApplicationContextAware, Initi
             throw new MonitorClassDefinitionResolverException("请指定监控扫描数据的实体所在包名，多个以','号分割");
         }
         scannerPackages.addAll(Arrays.asList(monitorScannerPackages.split(",")));
-    }
-
-    private void doResolveFields(Field[] monitorDeclaredFields, MonitorClassDefinition.Element element) {
-        for (Field monitorField : monitorDeclaredFields) {
-            final Monitor monitorAnnotation = AnnotationUtils.findAnnotation(monitorField, Monitor.class);
-            final Id idAnnotation = AnnotationUtils.findAnnotation(monitorField, Id.class);
-            if (Objects.isNull(monitorAnnotation) && Objects.isNull(idAnnotation)) {
-                continue;
-            }
-            final String fieldName = monitorField.getName();
-            if (Objects.nonNull(monitorAnnotation)) {
-                element.getMonitorFields().add(fieldName);
-                element.setCustomerProcess(monitorAnnotation.value());
-                element.setExpireTime(monitorAnnotation.expire());
-            }
-            if (Objects.nonNull(idAnnotation)) {
-                element.setPrimaryKeyField(fieldName);
-            }
-        }
     }
 
     @Override
