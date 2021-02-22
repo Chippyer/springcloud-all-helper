@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @datetime 2021-02-19 17:10
  */
 @Slf4j
-//@SuppressWarnings("all")
+@SuppressWarnings("all")
 public class MonitorService
     implements IMonitorService, ApplicationContextAware, ApplicationEventPublisherAware, InitializingBean {
 

@@ -52,7 +52,7 @@ public class MonitorDefinitionResolver implements ApplicationContextAware, Initi
                     continue;
                 }
                 final Mapper mapper = applicationContext.getBean(Mapper.class, monitorExecutorAnnotation.value());
-                final MonitorClassDefinition.Element element = this.doResolverFields(monitorClass, mapper);
+                final MonitorClassDefinition.Element element = this.resolverFields(monitorClass, mapper);
                 if (Objects.isNull(element)) {
                     continue;
                 }
@@ -61,7 +61,7 @@ public class MonitorDefinitionResolver implements ApplicationContextAware, Initi
         }
     }
 
-    private MonitorClassDefinition.Element doResolverFields(Class<?> monitorClass, Mapper mapper) {
+    private MonitorClassDefinition.Element resolverFields(Class<?> monitorClass, Mapper mapper) {
         final Monitor classMonitorAnnotation = AnnotationUtils.findAnnotation(monitorClass, Monitor.class);
         final Field[] monitorDeclaredFields = monitorClass.getDeclaredFields();
         final MonitorClassDefinition.Element element = new MonitorClassDefinition.Element(monitorClass, mapper);
