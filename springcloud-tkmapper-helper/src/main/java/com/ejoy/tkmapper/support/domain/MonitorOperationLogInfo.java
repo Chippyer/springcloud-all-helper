@@ -48,6 +48,11 @@ public class MonitorOperationLogInfo implements Serializable {
     private String desc;
 
     /**
+     * 扩展参数
+     */
+    private String extensionParam;
+
+    /**
      * 记录创建时间
      */
     private Date createDateTime;

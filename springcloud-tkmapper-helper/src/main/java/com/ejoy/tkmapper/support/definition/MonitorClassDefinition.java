@@ -2,9 +2,7 @@ package com.ejoy.tkmapper.support.definition;
 
 import tk.mybatis.mapper.common.Mapper;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 监控类定义信息
@@ -79,7 +77,7 @@ public class MonitorClassDefinition {
         /**
          * 监控对象具体字段
          */
-        private String monitorField;
+        private List<String> monitorFields = new ArrayList<>();
 
         /**
          * 监控对象具体字段是否自动处理记录操作信息
@@ -113,8 +111,8 @@ public class MonitorClassDefinition {
             return primaryKeyField;
         }
 
-        public String getMonitorField() {
-            return monitorField;
+        public List<String> getMonitorFields() {
+            return monitorFields;
         }
 
         public Boolean getCustomerProcess() {
@@ -129,8 +127,8 @@ public class MonitorClassDefinition {
             this.primaryKeyField = primaryKeyField;
         }
 
-        public void setMonitorField(String monitorField) {
-            this.monitorField = monitorField;
+        public void setMonitorFields(List<String> monitorFields) {
+            this.monitorFields = monitorFields;
         }
 
         public void setCustomerProcess(Boolean customerProcess) {

@@ -33,7 +33,7 @@ public interface IMonitorService {
      * @param id    监控类型信息主键唯一标识
      * @author chippy
      */
-    MonitorOperationLogInfo getOne(Class clazz, String id);
+    MonitorOperationLogInfo getOne(Class clazz, String id, String monitorField);
 
     /**
      * 查询最新十条的记录信息
@@ -42,7 +42,7 @@ public interface IMonitorService {
      * @param id    监控类型信息主键唯一标识
      * @author chippy
      */
-    List<MonitorOperationLogInfo> get(Class clazz, String id);
+    List<MonitorOperationLogInfo> get(Class clazz, String id, String monitorField);
 
     /**
      * 查询最新{endIndex}条的记录信息
@@ -52,7 +52,7 @@ public interface IMonitorService {
      * @param endIndex 结束下标值
      * @author chippy
      */
-    List<MonitorOperationLogInfo> get(Class clazz, String id, int endIndex);
+    List<MonitorOperationLogInfo> get(Class clazz, String id, String monitorField, int endIndex);
 
     /**
      * 从{startIndex}开始查询最新{endIndex - startIndex}条的记录信息
@@ -62,6 +62,6 @@ public interface IMonitorService {
      * @param endIndex 结束下标值
      * @author chippy
      */
-    List<MonitorOperationLogInfo> get(Class clazz, String id, int startIndex, int endIndex);
+    List<MonitorOperationLogInfo> get(Class clazz, String id, String monitorField, int startIndex, int endIndex);
 
 }
